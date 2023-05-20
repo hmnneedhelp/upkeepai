@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+
+  backend:
+    build: ./app/backend
+    ports:
+      - 8000:8000
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db/temp
+    volumes:
+      - ./app/backend:/app/backend
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+
+  db:
+    image: postgres:15.1-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=temp
+volumes:
+  postgres_data:
+#  frontend:
+#    build: ./app/frontend
+#    volumes:
+#      - './app/frontend:/app'
+#      - '/app/node_volumes'
+#    ports:
+#      - 8080:8080
