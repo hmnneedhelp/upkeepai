@@ -9,7 +9,7 @@ export default function Register(){
                 <input type="email" placeholder='Введите ваш Email' className='my-5 border-b-black border-2 border-x-0 border-t-0 focus:outline-none'/>
                 <input type="password" name="" id="" className='border-b-black border-2 border-x-0 border-t-0 focus:outline-none my-5'  placeholder='Введите ваш пароль'/>
                 <input type="file" name="" id="avatar" className='my-5 w-[200px] hidden' />
-                <label htmlFor="avatar" className='my-5'>Загрузите ваш аватар</label>
+                <label htmlFor="avatar" className='my-5 cursor-pointer'>Загрузите ваш аватар</label>
                 <button className='bg-cyan-500 hover:bg-cyan-600 w-[200px] h-10 rounded-lg'>Зарегистрироваться</button>
             </form>
             <p>Уже есть аккаунт? <Link href="Login">Войдите</Link></p>
