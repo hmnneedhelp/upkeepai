@@ -5,7 +5,6 @@ import Link from 'next/link';
 export async function getServerSideProps() {
     const response = await fetch("http://46.243.227.95:8000/objects/");
     const data = await response.json();
-    console.log(data)
 
     return{
         props:{
