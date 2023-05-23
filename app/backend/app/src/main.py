@@ -21,6 +21,6 @@ app.include_router(api_router)
 
 @app.get("/ping")
 async def ping(session: AsyncSession = Depends(get_db)):
-    # from src.db_fill.db_fil_3 import fill_db
+    # from src.db_fill.db_coords import fill_db
     # await fill_db(session)
     return {"ping": "pong"}

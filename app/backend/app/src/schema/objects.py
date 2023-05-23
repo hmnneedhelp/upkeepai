@@ -74,6 +74,16 @@ class Incident(BaseModel):
         orm_mode = True
 
 
+class Coordinate(BaseModel):
+    latitude: float
+    longitude: float
+
+    class Config:
+        orm_mode = True
+
+
 class MKDDetail(MKD):
+    coordinates: Coordinate | None
     overhauls: list[Overhaul] | None
     incidents: list[Incident] | None
+

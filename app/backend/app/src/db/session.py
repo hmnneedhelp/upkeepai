@@ -186,3 +186,10 @@ class Incident(Base):
     closed = Column(Date)
     unom = Column(Integer, ForeignKey("mkd.unom"))
     mkds = relationship("Mkd", back_populates="incidents", lazy="selectin")
+
+
+class Coordinate(Base):
+    __tablename__ = "coordinate"
+    unom = Column(Integer, primary_key=True)
+    latitude = Column(REAL)
+    longitude = Column(REAL)

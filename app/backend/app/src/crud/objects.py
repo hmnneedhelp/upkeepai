@@ -3,6 +3,7 @@ from sqlalchemy import insert, select, delete, join, outerjoin
 from src.schema.objects import MKDShort, MKD, MKDDetail
 from src.schema.objects import Overhaul as OverhaulSchema
 from src.schema.objects import Incident as IncidentSchema
+from src.schema.objects import Coordinate as CoordinateSchema
 from src.db.session import *
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import parse_obj_as
@@ -66,8 +67,9 @@ async def get_object_by_id(session: AsyncSession, id: int) -> MKD:
     mkd = mkd.fetchone()
     works = await get_overhaul_works(mkd.unom, session)
     incidents = await get_mkd_incidents(mkd.unom, session)
+    coordinates = await get_mkd_coordinates(mkd.unom, session)
     M = MKD.from_orm(mkd)
-    return MKDDetail(**M.dict(), overhauls=works, incidents=incidents)
+    return MKDDetail(**M.dict(), overhauls=works, incidents=incidents, coordinates=coordinates)
 
 
 async def get_overhaul_works(unom: int, session: AsyncSession):
@@ -105,3 +107,14 @@ async def get_mkd_incidents(unom: int, session: AsyncSession):
     for incident in incidents:
         result.append(IncidentSchema.from_orm(incident))
     return result
+
+
+async def get_mkd_coordinates(unom: int, session: AsyncSession):
+    stmt = select(Coordinate.latitude,
+                  Coordinate.longitude
+                  ).where(Coordinate.unom == unom)
+    coords = await session.execute(stmt)
+    coords = coords.fetchone()
+    if not coords:
+        return None
+    return CoordinateSchema.from_orm(coords)
