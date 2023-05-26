@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'bdffaf05ae13'
-down_revision = 'a08f2d0c9efb'
+revision = "bdffaf05ae13"
+down_revision = "a08f2d0c9efb"
 branch_labels = None
 depends_on = None
 
@@ -19,7 +19,11 @@ depends_on = None
 def upgrade() -> None:
     op.create_table(
         "coordinate",
-        sa.Column("unom", sa.Integer(), nullable=False,),
+        sa.Column(
+            "unom",
+            sa.Integer(),
+            nullable=False,
+        ),
         sa.Column("latitude", sa.REAL(), nullable=True),
         sa.Column("longitude", sa.REAL(), nullable=True),
         sa.PrimaryKeyConstraint("unom"),

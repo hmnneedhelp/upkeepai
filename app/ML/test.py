@@ -12,7 +12,7 @@ df_4a = pd.read_excel('Data/4_Виды работ по содержанию и �
 df_5 = pd.read_excel('Data/5_Типы событий, регистрируемых по типу объекта многоквартирный дом.xlsx')
 
 # train new model
-#r2 = train_num_inc_model(df_1, df_2)
+# r2 = train_num_inc_model(df_1, df_2)
 
 # find the best candidates to capital repare 
 # by prediction num_incidents

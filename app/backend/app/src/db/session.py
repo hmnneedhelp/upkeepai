@@ -1,17 +1,16 @@
 import datetime
 import os
 
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy import func
-from sqlalchemy.orm import declarative_base, Mapped, mapped_column
-from sqlalchemy.types import Date, String
-from sqlalchemy import Column, Integer, String, ForeignKey, Float
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.types import Date
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import REAL
 
-LOCAL_DATABASE_URL = "postgresql+asyncpg://postgres:postgres@0.0.0.0:5432/temp"
-SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL", default=LOCAL_DATABASE_URL)
+SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL")
 engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=True, future=True)
 Base = declarative_base()
 
@@ -34,8 +33,6 @@ class Mkd(Base):
     name = Column(String)
     parent_id = Column(Integer)
     login = Column(String)
-    # incidents = relationship("Incident", back_populates="dom")
-    coords = Column(String)  # todo polygon
     form_of_ownership = Column(String)  # 755 форма собственности
     year_built = Column(Integer)  # 756 постройки
     year_reconstructed = Column(Integer)  # 757 год реконструкции
@@ -193,3 +190,11 @@ class Coordinate(Base):
     unom = Column(Integer, primary_key=True)
     latitude = Column(REAL)
     longitude = Column(REAL)
+
+
+class PredictResult(Base):
+    __tablename__ = "predict"
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    unom = Column(Integer, unique=True)
+    predicted_num = Column(Integer)

@@ -16,7 +16,6 @@ class MKD(BaseModel):
     name: str
     parent_id: int | None
     login: str | None
-    # coords: = Column(String)  # todo polygon
     form_of_ownership: str | None  # 755 форма собственности
     year_built: int | None  # 756 постройки
     year_reconstructed: int | None  # 757 год реконструкции
@@ -82,8 +81,18 @@ class Coordinate(BaseModel):
         orm_mode = True
 
 
-class MKDDetail(MKD):
+class MKDDetail(BaseModel):
+    mkd: MKD
     coordinates: Coordinate | None
     overhauls: list[Overhaul] | None
     incidents: list[Incident] | None
 
+
+class PredictResult(BaseModel):
+    id: int
+    name: str
+    unom: int
+    predicted_num: int
+
+    class Config:
+        orm_mode = True
