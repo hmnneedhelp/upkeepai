@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 
 def prepare_df_1(df_1: pd.DataFrame):
@@ -89,15 +88,13 @@ def create_df_1_2(df_1: pd.DataFrame, df_2: pd.DataFrame):
     # разделим данные инцидентов по жалобам и датчики
     df_incident = df_2[df_2["Источник"] != "ASUPR"]  # жалобы
 
-    # К каждому дому добавим инфо о кол-ве заявок кол-во проблем с датчиков
+    # К каждому дому добавим инфо о кол-ве заявок (искл показания с датчиков)
     df_1_2 = df_1.merge(
         df_incident.groupby("unom").size().rename("num_incident"), how="left", on="unom"
     )
 
     # отфильтруем слишком большое число обращений
-    df_1_2 = df_1_2.drop(
-        np.where(df_1_2["num_incident"] > (df_1_2.num_incident.max() * 0.8))[0]
-    )
+    df_1_2 = df_1_2[df_1_2["num_incident"] < (df_1_2.num_incident.max() * 0.8)]
     df_1_2 = df_1_2.dropna()
 
     return df_1_2
@@ -112,6 +109,7 @@ def columns_num_inc_model():
         "Количество квартир",
         "Общая площадь",
         "num_lift",
+        "Год постройки",
     ]
     cat_cols = [
         "Серия проекта",
@@ -124,7 +122,7 @@ def columns_num_inc_model():
     return target_col, num_cols, cat_cols
 
 
-def prepare_df_3(df_3: pd.DataFrame, df_4: pd.DataFrame):
+def create_df_3_4(df_3: pd.DataFrame, df_4: pd.DataFrame):
     # подготовка 3 табл. некоторые данные не совпадают, приведем к стандарту
     old_name = list(set(df_3["WORK_NAME"]).difference(df_4["Наименование"]))
     new_name = [
@@ -137,12 +135,52 @@ def prepare_df_3(df_3: pd.DataFrame, df_4: pd.DataFrame):
         "ремонт подъездов, направленный на восстановление их надлежащего состояния и проводимый при выполнении иных работ",
     ]
     df_3["WORK_NAME"] = df_3["WORK_NAME"].replace(old_name, new_name)
-    return df_3
 
-
-def create_df_3_4(df_3: pd.DataFrame, df_4: pd.DataFrame):
     # Соединим табл 3 и 4 (проводимый в 2022 г кап рем и виды работ по кап рем)
-    df_3 = prepare_df_3(df_3)
     df_3_4 = df_3.merge(df_4, how="inner", left_on="WORK_NAME", right_on="Наименование")
     df_3_4 = df_3_4.drop(columns="Наименование")
     return df_3_4
+
+
+"""
+def columns_inc_cap_model():
+    # выберем колонки для обучения модели для предсказания кол-ва инцидентов
+    target_col = ["num_works"]
+    num_cols = [
+        "Количество этажей",
+        "Количество подъездов",
+        "Количество квартир",
+        "Общая площадь",
+        "num_lift",
+        "predicted_num_inc",
+        "Год постройки",
+    ]
+    cat_cols = [
+        "Серия проекта",
+        "Материал стен",
+        "Материал кровли",
+        "Тип жилищного фонда",
+        "Статус МКД",
+        "Is_lift",
+    ]
+    return target_col, num_cols, cat_cols
+"""
+
+"""
+def create_df_inc_cap(df_sorted: pd.DataFrame, df_3: pd.DataFrame, df_4: pd.DataFrame):
+    # табл работ по кап рем за 2022
+    df_3_4 = create_df_3_4(df_3, df_4)
+
+    # число работ кап ремонта для каждого дома df_3_4.groupby("UNOM").size()
+    # добавим его к табл с домами и числом инцидентов
+    df_inc_cap = df_sorted.merge(
+        df_3_4.rename(columns={"UNOM": "unom"})
+        .groupby("unom")
+        .size()
+        .rename("num_works"),
+        how="left",
+        on="unom",
+    ).fillna(0)
+
+    return df_inc_cap
+"""
