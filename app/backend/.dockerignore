@@ -1,5 +1,7 @@
 data.dump
 ultimate.dump
+app/catboost_info
+**/*cache
 **/*.csv
 **/*.json
 **/*.xlsx

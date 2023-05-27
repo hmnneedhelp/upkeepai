@@ -1,22 +1,45 @@
-from src.db.session import User as UserModel
-from sqlalchemy import insert, select, delete, join, outerjoin
+import asyncio
+
+from fastapi import HTTPException
+from sqlalchemy import select, outerjoin
 from src.schema.objects import MKDShort, MKD, MKDDetail
 from src.schema.objects import Overhaul as OverhaulSchema
 from src.schema.objects import Incident as IncidentSchema
 from src.schema.objects import Coordinate as CoordinateSchema
+from src.schema.objects import PredictResult as PredictResultSchema
 from src.db.session import *
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import parse_obj_as
 
 
-async def get(limit: int, offset: int, session: AsyncSession) -> list[MKDShort]:
-    stmt = select(Mkd).limit(limit).offset(offset)
+async def get(
+    limit: int, offset: int, session: AsyncSession
+) -> list[PredictResultSchema]:
+    stmt = select(PredictResult).limit(limit).offset(offset)
     result = await session.execute(stmt)
-    result = result.scalars().all()
-    return parse_obj_as(list[MKDShort], result)
+    result = result.all()
+    return [PredictResultSchema.from_orm(res[0]) for res in result]
 
 
-async def get_object_by_id(session: AsyncSession, id: int) -> MKD:
+async def get_object_by_id(session: AsyncSession, id: int) -> MKDDetail:
+    unom = await get_unom_by_id(id=id, session=session)
+    if not unom:
+        raise HTTPException(status_code=404, detail=f"Object with id={id} not exists")
+    result = await asyncio.gather(
+        *[
+            get_object_by_unom(unom, session),
+            get_overhaul_works(unom, session),
+            get_mkd_incidents(unom, session),
+            get_mkd_coordinates(unom, session),
+        ]
+    )
+    mkd, works, incidents, coordinates = result
+    return MKDDetail(
+        mkd=mkd, overhauls=works, incidents=incidents, coordinates=coordinates
+    )
+
+
+async def get_object_by_unom(unom: int, session: AsyncSession):
     stmt = (
         select(
             Mkd.id,
@@ -59,60 +82,38 @@ async def get_object_by_id(session: AsyncSession, id: int) -> MKD:
         .outerjoin(MkdStatus)
         .outerjoin(MkdManagementStatus)
         .outerjoin(MkdCategory)
-        .where(Mkd.id == id)
+        .where(Mkd.unom == unom)
     )
-
-    # stmt = select(Mkd.id).where(Mkd.id == id)
     mkd = await session.execute(stmt)
     mkd = mkd.fetchone()
-    works = await get_overhaul_works(mkd.unom, session)
-    incidents = await get_mkd_incidents(mkd.unom, session)
-    coordinates = await get_mkd_coordinates(mkd.unom, session)
-    M = MKD.from_orm(mkd)
-    return MKDDetail(**M.dict(), overhauls=works, incidents=incidents, coordinates=coordinates)
+    return MKD.from_orm(mkd)
+
+
+async def get_unom_by_id(id: int, session: AsyncSession) -> int:
+    unom = await session.execute(select(Mkd.unom).where(Mkd.id == id))
+    return unom.scalar_one_or_none()
 
 
 async def get_overhaul_works(unom: int, session: AsyncSession):
-    stmt = select(
-        Overhaul.id,
-        Overhaul.name,
-        Overhaul.period,
-        Overhaul.elev_num,
-        Overhaul.plan_start,
-        Overhaul.plan_end,
-        Overhaul.fact_start,
-        Overhaul.fact_end,
-        Overhaul.num_entrance,
-    ).where(Overhaul.unom == unom)
+    stmt = select(Overhaul).where(Overhaul.unom == unom)
     works = await session.execute(stmt)
-    works = works.mappings()
-    result = []
-    for work in works:
-        result.append(OverhaulSchema.from_orm(work))
-    return result
+    works = works.all()
+    return [OverhaulSchema.from_orm(work[0]) for work in works]
 
 
 async def get_mkd_incidents(unom: int, session: AsyncSession):
-    stmt = select(
-        Incident.id,
-        Incident.name,
-        Incident.source,
-        Incident.opened,
-        Incident.closed,
-        Incident.unom,
-    ).where(Incident.unom == unom)
+    stmt = (
+        select(Incident).where(Incident.unom == unom).where(Incident.source != "ASUPR")
+    )
     incidents = await session.execute(stmt)
-    incidents = incidents.mappings()
-    result = []
-    for incident in incidents:
-        result.append(IncidentSchema.from_orm(incident))
-    return result
+    incidents = incidents.all()
+    return [IncidentSchema.from_orm(incident[0]) for incident in incidents]
 
 
 async def get_mkd_coordinates(unom: int, session: AsyncSession):
-    stmt = select(Coordinate.latitude,
-                  Coordinate.longitude
-                  ).where(Coordinate.unom == unom)
+    stmt = select(Coordinate.latitude, Coordinate.longitude).where(
+        Coordinate.unom == unom
+    )
     coords = await session.execute(stmt)
     coords = coords.fetchone()
     if not coords:
