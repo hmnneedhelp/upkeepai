@@ -1,38 +1,76 @@
+'use strict'
 
-import Script from "next/script";
+import CollapsibleDiv from "./Collapse";
+import { useEffect, useState } from "react";
+
+interface Incident {
+  id: number;
+  name: string;
+  source: string;
+  opened: string;
+  closed: string;
+}
+
 const ContactInfo = ({ contact }) => {
-    const { name, id} = contact || {};
+    const {mkd, incidents} = contact || {};
     if (!contact) {
       return (
         <p>Дома не существует</p>
-        )
+      );
     }
+    const fieldNames = {
+      "mkd.year_reconstructed": "Год реконструкции",
+      "mkd.year_built": "Год постройки",
+      "mkd.form_of_ownership": "Форма собственности",
+      "mkd.series_of_project": "Серия проекта",
+      "mkd.num_floors": "Количество этажей",
+      "mkd.num_entrances": 'Количество входов',
+      "mkd.num_apartments": "Количество квартир",
+      "mkd.total_area":"Общая площадь",
+      "mkd.living_area":"Жилая площадь",
+      "mkd.non_living_area": "Нежилая площадь",
+      "mkd.building_volume": "Объем здания",
+      "mkd.wear_and_tear":"Износ здания",
+      "mkd.energy_efficiency":"Энергоэффективность",
+      "mkd.wall_material":"Материал стен",
+      "mkd.roof_material":"Материал крыши",
+      "mkd.accident_rate":"Аварийность",
+      "mkd.num_passenger_elevators": "Количество пассажирских лифтов",
+      "mkd.num_freight_passenger_elevators":"Количество грузовых лифтов",
+      "mkd.roof_cleaning":"Очередь уборки крыши",
+      "mkd.roofing_material":"Материал крыши",
+      "mkd.unom":"UNOM",
+      "mkd.housing_stock":"Тип здания",
+      "mkd.mkd_status":"Статус МКД",
+      "mkd.mkd_management_status":"Статус управления МКД",
+      "mkd.reason_for_status_change":"Причина смены статуса",
+      "mkd.mkd_category":"Категория МКД",
+    };
+
+    const getValueByPath = (object, path) => {
+      return path.reduce((obj, key) => (obj && obj[key] !== 'undefined') ? obj[key] : null, object);
+    };
+
+    const getMarkup = (fieldValue, fieldName) => {
+      if (fieldValue == null) {
+        return <p>{fieldName}: Данных не найдено</p>;
+      } else {
+        return( 
+       <p>{fieldName}:  {fieldValue}</p>
+      )}
+    };
+    console.log(incidents)
     return (
-      <>
-        <h4>Идентификатор - {id}</h4>
+      <main className="mx-auto">
+        <h3>{contact?.mkd?.name}</h3>
+        <h4>Идентификатор - {contact?.mkd?.id}</h4>
         <div className="text-left mx-auto">
-            <p> Год постройки: {contact.year_built} </p>
-            <p> Год реконструкции: {contact.year_reconstructed}</p>
-            <p> Форма собственности: {contact.form_of_ownership} </p>
-            <p> Количество этажей: {contact.num_floors} </p>
-            <p> Количество входов: {contact.num_entrances} </p>
-            <p> Количество квартир: {contact.num_apartments} </p>
-            <p> Общая площадь: {contact.total_area} кв.м</p>
-            <p> Жилая площадь: {contact.living_area} кв.м</p>
-            <p> Материал стен: {contact.wall_material} </p>
-            <p> Количество жалоб: {contact.accident_rate} </p>
-            <p> Количество пассажирских лифтов: {contact.num_passenger_elevators} </p>
-            <p> Очередь на очистку крыши: {contact.roof_cleaning} </p>
-            <p> Материал крыши: {contact.roofing_material} </p>
-            <p> Unom: {contact.unom} </p>
-            <p> Типы жилищного фонда: {contact.housing_stock} </p>
-            <p> Статус МКД: {contact.mkd_status} </p>
-            <p> Статус управления МКД: {contact.mkd_management_status} </p>
-            <p> Причина изменения статуса МКД: {contact.reason_for_status_change} </p>
-            <p> Категория МКД: {contact.mkd_category} </p>
+          {Object.keys(fieldNames).map(key => getMarkup(getValueByPath(contact, key.split('.')), fieldNames[key]))}
         </div>
-      </>
+        {incidents && incidents.map((incident: Incident, index: number) => (
+          <CollapsibleDiv key={index} incident={incident?.id} />
+        ))}
+      </main>
     );
   }
-  
-  export default ContactInfo;
+export default ContactInfo;
