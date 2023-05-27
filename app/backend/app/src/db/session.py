@@ -192,9 +192,17 @@ class Coordinate(Base):
     longitude = Column(REAL)
 
 
-class PredictResult(Base):
-    __tablename__ = "predict"
+class IncidentPredict(Base):
+    __tablename__ = "incident_predict"
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    unom = Column(Integer, unique=True)
+    works = Column(String)
+
+class FeaturePredict(Base):
+    __tablename__ = "feature_predict"
     id = Column(Integer, primary_key=True)
     name = Column(String)
     unom = Column(Integer, unique=True)
     predicted_num = Column(Integer)
+

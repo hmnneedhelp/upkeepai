@@ -45,7 +45,7 @@ async def _df_to_db(df_cap: DataFrame, session: AsyncSession):
 
 def _store_to_database(session: AsyncSession, df: DataFrame):
     connection = session.connection()
-    df.to_sql("predict", con=connection, if_exists="replace", index=False)
+    df.to_sql("feature_predict", con=connection, if_exists="replace", index=False)
     session.commit()
 
 

@@ -1,18 +1,23 @@
 from openpyxl import Workbook
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from src.db.session import PredictResult
 from pathlib import Path
+from src.schema.models import PredictionModels
+from src.db.session import *
 
-
-async def create_excel(session: AsyncSession) -> Path:
+async def create_excel(model: PredictionModels, session: AsyncSession) -> Path:
     """
     Create Excel document for downloading
     """
-    stmt = select(PredictResult.id,
-                  PredictResult.name,
-                  PredictResult.unom,
-                  PredictResult.predicted_num)
+    if model.value == 'incident':
+        table = IncidentPredict
+    else:
+        table = FeaturePredict
+
+    stmt = select(table.id,
+                  table.name,
+                  table.unom,
+                  table.predicted_num)
     result = await session.execute(stmt)
     result = result.all()
     wb = Workbook()

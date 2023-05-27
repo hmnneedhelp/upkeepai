@@ -88,7 +88,16 @@ class MKDDetail(BaseModel):
     incidents: list[Incident] | None
 
 
-class PredictResult(BaseModel):
+class IncidentPredict(BaseModel):
+    id: int
+    name: str
+    unom: int
+    works: str
+
+    class Config:
+        orm_mode = True
+
+class FeaturePredict(BaseModel):
     id: int
     name: str
     unom: int

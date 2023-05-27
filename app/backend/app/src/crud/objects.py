@@ -6,19 +6,28 @@ from src.schema.objects import MKDShort, MKD, MKDDetail
 from src.schema.objects import Overhaul as OverhaulSchema
 from src.schema.objects import Incident as IncidentSchema
 from src.schema.objects import Coordinate as CoordinateSchema
-from src.schema.objects import PredictResult as PredictResultSchema
+from src.schema.objects import IncidentPredict as IncidentPredictSchema
+from src.schema.objects import FeaturePredict as FeaturePredictSchema
+
+from src.schema.models import PredictionModels
 from src.db.session import *
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import parse_obj_as
 
 
 async def get(
-    limit: int, offset: int, session: AsyncSession
-) -> list[PredictResultSchema]:
-    stmt = select(PredictResult).limit(limit).offset(offset)
+    model: PredictionModels, limit: int, offset: int, session: AsyncSession
+) -> list[IncidentPredictSchema] | list[FeaturePredictSchema]:
+    if model.value == 'incident':
+        table = IncidentPredict
+        schema = IncidentPredictSchema
+    else:
+        table = FeaturePredict
+        schema = FeaturePredictSchema
+    stmt = select(table).limit(limit).offset(offset)
     result = await session.execute(stmt)
     result = result.all()
-    return [PredictResultSchema.from_orm(res[0]) for res in result]
+    return [schema.from_orm(res[0]) for res in result]
 
 
 async def get_object_by_id(session: AsyncSession, id: int) -> MKDDetail:
