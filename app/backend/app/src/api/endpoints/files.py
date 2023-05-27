@@ -9,7 +9,9 @@ router = APIRouter()
 
 
 @router.get("/download", response_class=FileResponse)
-async def file_download(model: PredictionModels, session: AsyncSession = Depends(deps.get_db)):
+async def file_download(
+    model: PredictionModels, session: AsyncSession = Depends(deps.get_db)
+):
     path = await create_excel(model=model, session=session)
     return FileResponse(
         path=path, filename="DocPredict.xlsx", media_type="multipart/form-data"

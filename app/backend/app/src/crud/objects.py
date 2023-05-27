@@ -18,13 +18,14 @@ from pydantic import parse_obj_as
 async def get(
     model: PredictionModels, limit: int, offset: int, session: AsyncSession
 ) -> list[IncidentPredictSchema] | list[FeaturePredictSchema]:
-    if model.value == 'incident':
+    if model.value == "incident":
         table = IncidentPredict
         schema = IncidentPredictSchema
+        stmt = select(table).limit(limit).offset(offset).order_by(table.num_works.desc())
     else:
         table = FeaturePredict
         schema = FeaturePredictSchema
-    stmt = select(table).limit(limit).offset(offset)
+        stmt = select(table).limit(limit).offset(offset)
     result = await session.execute(stmt)
     result = result.all()
     return [schema.from_orm(res[0]) for res in result]

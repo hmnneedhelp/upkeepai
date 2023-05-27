@@ -89,13 +89,13 @@ class MKDDetail(BaseModel):
 
 
 class IncidentPredict(BaseModel):
-    id: int
-    name: str
     unom: int
-    works: str
+    works_list: list[str]
+    num_works: int
 
     class Config:
         orm_mode = True
+
 
 class FeaturePredict(BaseModel):
     id: int

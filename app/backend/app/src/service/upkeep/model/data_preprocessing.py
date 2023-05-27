@@ -55,7 +55,6 @@ def prepare_df_1(df_1: pd.DataFrame):
         "Количество пассажирских лифтов",
         "Количество грузопассажирских лифтов",
         "Количество грузовых лифтов",
-
     ]
     for column in column_int_list:
         df_1[column] = df_1[column].astype(int)

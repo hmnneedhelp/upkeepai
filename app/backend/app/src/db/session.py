@@ -194,10 +194,10 @@ class Coordinate(Base):
 
 class IncidentPredict(Base):
     __tablename__ = "incident_predict"
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    unom = Column(Integer, unique=True)
-    works = Column(String)
+    unom = Column(Integer, primary_key=True)
+    works_list = Column(String)
+    num_works = Column(Integer)
+
 
 class FeaturePredict(Base):
     __tablename__ = "feature_predict"
@@ -205,4 +205,3 @@ class FeaturePredict(Base):
     name = Column(String)
     unom = Column(Integer, unique=True)
     predicted_num = Column(Integer)
-

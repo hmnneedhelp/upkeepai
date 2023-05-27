@@ -1,4 +1,7 @@
-from src.service.upkeep.data_preprocessing import create_df_1_2, columns_num_inc_model
+from src.service.upkeep.model.data_preprocessing import (
+    create_df_1_2,
+    columns_num_inc_model,
+)
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from catboost import CatBoostRegressor

@@ -17,7 +17,7 @@ async def predict_prop(session: AsyncSession = Depends(deps.get_db)):
     return status.HTTP_200_OK
 
 
-@router.get('/incident')
+@router.get("/incident")
 async def predict_inc(session: AsyncSession = Depends(deps.get_db)):
     """
     Predict based on object incidents

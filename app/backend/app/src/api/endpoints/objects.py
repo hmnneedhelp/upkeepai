@@ -9,9 +9,13 @@ from src.service.service import model_manager
 
 router = APIRouter()
 
+
 @router.get("/", response_model=list[IncidentPredict] | list[FeaturePredict])
 async def object_list(
-    model: PredictionModels, limit: int = 10, offset: int = 0, session: AsyncSession = Depends(deps.get_db)
+    model: PredictionModels,
+    limit: int = 10,
+    offset: int = 0,
+    session: AsyncSession = Depends(deps.get_db),
 ):
     """
     Get a list of predicted objects according to the selected model:
