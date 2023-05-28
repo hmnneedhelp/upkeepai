@@ -76,13 +76,15 @@ const ContactInfo = ({ contact }) => {
         
       } else{
         return(
-          <p>{fieldName2} : {fieldValue2}</p>
+          <div className="border-b-2 border-grey-300">
+            <p>{fieldName2} : {fieldValue2}</p>
+          </div>
         )
       }
     };
 
     return (
-      <main className="ml-5" >
+      <main className="ml-5 text-center" >
         <h3>{contact?.mkd?.name}</h3>
         <h4>Идентификатор - {contact?.mkd?.id}</h4>
         <div className="text-left mx-auto">

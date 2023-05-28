@@ -5,14 +5,13 @@ const Addresses = ({ initialData}) => {
     const [data, setData] = useState(initialData);
     const [limit, setLimit] = useState(15);
     const [offset, setOffset] = useState(0);
-
+    
     useEffect(() => {
         const fetchData = async () => {
-            const response = await fetch(`http://46.243.227.95:8000/objects/?limit=${limit}&offset=${offset}`);
+            const response = await fetch(`http://46.243.227.95:8000/objects/?limit=15&offset=${offset}&model=feature`);
             const newData = await response.json();
             setData(newData);
         };
-
         fetchData();
     }, [limit, offset]);
 
@@ -22,16 +21,14 @@ const Addresses = ({ initialData}) => {
     const handleClickMinus = () =>{
         setOffset(offset - 15)
     }
-
     return (
-        <div className='bg-white flex flex-col justify-center items-center mt-10'>
+        <div className='bg-white flex flex-col justify-center items-center pt-10'>
             <Link href={'../'} className='' ><p>Предыдущая страница</p></Link>
             {data?.length === 0 ? (
                 <div>Загружается</div>
-            ) : (
-                data?.map(address => (
+            ) : (data?.map(address => (
                     <div  key={address.id}>
-                        <Link href={'/addresses/'+ address.id}>
+                        <Link href={'/property/'+ address.id}>
                             <p className='text-left'>{address.name}</p>
                         </Link>
                     </div>
@@ -54,7 +51,7 @@ const Addresses = ({ initialData}) => {
 };
 
 Addresses.getInitialProps = async () => {
-    const response = await fetch("http://46.243.227.95:8000/objects/?limit=15&offset=0");
+    const response = await fetch("http://46.243.227.95:8000/objects/?limit=15&offset=0&model=feature");
     const initialData = await response.json();
     return { initialData };
 };
