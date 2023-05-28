@@ -25,6 +25,7 @@ const Addresses = ({ initialData}) => {
 
     return (
         <div className='bg-white flex flex-col justify-center items-center mt-10'>
+            <Link href={'../'} className='' ><p>Предыдущая страница</p></Link>
             {data?.length === 0 ? (
                 <div>Загружается</div>
             ) : (

@@ -58,13 +58,38 @@ const ContactInfo = ({ contact }) => {
        <p>{fieldName}:  {fieldValue}</p>
       )}
     };
-    console.log(incidents)
+
+    const fieldNames2 = {
+      'contact.incidents.id': 'Номер жалобы',
+      'incidents.name': 'Причина жалобы',
+      'incidents.opened': 'Дата поступления жалобы',
+      'incidents.closed': 'Дата решения',
+    };
+
+    const getValueByPath2 = (object, path) => {
+      return path.reduce((obj2, key2) => (obj2 && obj2[key2] !== 'undefined') ? obj2[key2] : null, object);
+    };
+
+    const getMarkup2 = (fieldValue2, fieldName2) =>{
+      if (fieldValue2 == null){
+        return <p>{fieldName2}: Данных не найдено </p>
+        
+      } else{
+        return(
+          <p>{fieldName2} : {fieldValue2}</p>
+        )
+      }
+    };
+
     return (
-      <main className="mx-auto">
+      <main className="ml-5" >
         <h3>{contact?.mkd?.name}</h3>
         <h4>Идентификатор - {contact?.mkd?.id}</h4>
         <div className="text-left mx-auto">
           {Object.keys(fieldNames).map(key => getMarkup(getValueByPath(contact, key.split('.')), fieldNames[key]))}
+        </div>
+        <div className="mt-5 pb-10">
+          <p>Общее количество жалоб: {contact?.incidents?.length}</p>
         </div>
       </main>
     );
