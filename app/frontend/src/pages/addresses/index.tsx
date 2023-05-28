@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-const Addresses = ({ initialData }) => {
+import React from 'react';
+const Addresses = ({ initialData}) => {
     const [data, setData] = useState(initialData);
     const [limit, setLimit] = useState(15);
     const [offset, setOffset] = useState(0);

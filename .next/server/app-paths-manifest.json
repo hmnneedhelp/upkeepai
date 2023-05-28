@@ -1,0 +1,6 @@
+{
+  "/frontend/node_modules/color-convert/route": "app/frontend/node_modules/color-convert/route.js",
+  "/frontend/node_modules/@babel/highlight/node_modules/color-convert/route": "app/frontend/node_modules/@babel/highlight/node_modules/color-convert/route.js",
+  "/frontend/node_modules/@nextui-org/react/cjs/link/icon-35odtl/route": "app/frontend/node_modules/@nextui-org/react/cjs/link/icon-35odtl/route.js",
+  "/frontend/node_modules/@nextui-org/react/esm/link/icon-25yzrg/route": "app/frontend/node_modules/@nextui-org/react/esm/link/icon-25yzrg/route.js"
+}
