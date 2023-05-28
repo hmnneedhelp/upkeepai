@@ -1,6 +1,5 @@
 'use strict'
 
-import CollapsibleDiv from "./Collapse";
 import { useEffect, useState } from "react";
 
 interface Incident {
@@ -67,9 +66,6 @@ const ContactInfo = ({ contact }) => {
         <div className="text-left mx-auto">
           {Object.keys(fieldNames).map(key => getMarkup(getValueByPath(contact, key.split('.')), fieldNames[key]))}
         </div>
-        {incidents && incidents.map((incident: Incident, index: number) => (
-          <CollapsibleDiv key={index} incident={incident?.id} />
-        ))}
       </main>
     );
   }

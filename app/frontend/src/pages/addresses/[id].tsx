@@ -2,7 +2,6 @@ import Head from "next/head";
 import ContactInfo from "../../components/ContactInfo";
 import Script from 'next/script';
 import Link from "next/link";
-import CollapsibleDiv from "@/components/Collapse";
 export const getServerSideProps = async (context) => {
     const { id } = context.params;
     const response = await fetch(`http://46.243.227.95:8000/objects/`+ id );
