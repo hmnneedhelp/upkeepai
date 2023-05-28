@@ -24,16 +24,18 @@ df_5 = pd.read_excel(
 )
 
 # train new model
-r2 = train_num_inc_model(df_1, df_2)
+# r2 = train_num_inc_model(df_1, df_2)
 
 # prediction num_incidents
-df_cap = predict_num_inc_model(df_1)
+# df_cap = predict_num_inc_model(df_1)
 
 # train new model
-loss, accuracy = train_cap_works_model(df_1, df_3, df_4)
+# loss, accuracy = train_cap_works_model(df_1, df_3, df_4)
 
 # предсказание на основе характеристик дома
 df_prediction = predict_by_house(df_1, df_3, df_4)
+df_prediction.to_excel(r"Data/predict_by_house.xlsx")
 
 # предсказание на основе инцидентов
-df_prediction_inc = predict_by_house_and_inc(df_1, df_2)
+# df_prediction_inc = predict_by_house_and_inc(df_1, df_2)
+# df_prediction_inc.to_excel(r"Data/df_prediction_inc.xlsx")
