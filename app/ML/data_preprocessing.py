@@ -87,6 +87,10 @@ def create_df_1_2(df_1: pd.DataFrame, df_2: pd.DataFrame):
 
     # разделим данные инцидентов по жалобам и датчики
     df_incident = df_2[df_2["Источник"] != "ASUPR"]  # жалобы
+    df_incident = df_incident[["Наименование", "Источник", "unom"]]  # нужные столбцы
+    df_incident = df_incident.dropna()
+    # оставим только подходящие нам источники данных для кап ремонта
+    df_incident = df_incident.loc[df_incident["Источник"].isin(["EDC", "NG", "MGI"])]
 
     # К каждому дому добавим инфо о кол-ве заявок (искл показания с датчиков)
     df_1_2 = df_1.merge(
@@ -124,6 +128,8 @@ def columns_num_inc_model():
 
 def create_df_3_4(df_3: pd.DataFrame, df_4: pd.DataFrame):
     # подготовка 3 табл. некоторые данные не совпадают, приведем к стандарту
+    df_3_ = df_3.copy()
+    
     old_name = list(set(df_3["WORK_NAME"]).difference(df_4["Наименование"]))
     new_name = [
         "ремонт или замена мусоропровода",
@@ -134,53 +140,94 @@ def create_df_3_4(df_3: pd.DataFrame, df_4: pd.DataFrame):
         "ремонт внутридомовых инженерных сетей электроснабжения",
         "ремонт подъездов, направленный на восстановление их надлежащего состояния и проводимый при выполнении иных работ",
     ]
-    df_3["WORK_NAME"] = df_3["WORK_NAME"].replace(old_name, new_name)
+    df_3_["WORK_NAME"] = df_3_["WORK_NAME"].replace(old_name, new_name)
 
     # Соединим табл 3 и 4 (проводимый в 2022 г кап рем и виды работ по кап рем)
-    df_3_4 = df_3.merge(df_4, how="inner", left_on="WORK_NAME", right_on="Наименование")
+    df_3_4 = df_3_.merge(df_4, how="inner", left_on="WORK_NAME", right_on="Наименование")
     df_3_4 = df_3_4.drop(columns="Наименование")
     return df_3_4
 
 
-"""
-def columns_inc_cap_model():
+def columns_num_works_model():
     # выберем колонки для обучения модели для предсказания кол-ва инцидентов
-    target_col = ["num_works"]
-    num_cols = [
-        "Количество этажей",
-        "Количество подъездов",
-        "Количество квартир",
-        "Общая площадь",
-        "num_lift",
-        "predicted_num_inc",
-        "Год постройки",
-    ]
-    cat_cols = [
-        "Серия проекта",
-        "Материал стен",
-        "Материал кровли",
-        "Тип жилищного фонда",
-        "Статус МКД",
-        "Is_lift",
-    ]
+    target_col = ['замена лифтового оборудования',
+                'ремонт внутридомовых инженерных систем водоотведения (канализации) (выпуски и сборные трубопроводы)',
+                'ремонт внутридомовых инженерных систем теплоснабжения (разводящие магистрали)',
+                'ремонт внутридомовых инженерных систем холодного водоснабжения (разводящие магистрали)',
+                'ремонт внутридомовых инженерных систем горячего водоснабжения (разводящие магистрали)',
+                'ремонт или замена мусоропровода',
+                'ремонт внутридомовых инженерных систем газоснабжения',
+                'ремонт фасада (замена оконных блоков, расположенных в помещениях общего пользования в многоквартирном доме)',
+                'ремонт подъездов, направленный на восстановление их надлежащего состояния и проводимый при выполнении иных работ',
+                'ремонт крыши',
+                'ремонт внутридомовых инженерных сетей электроснабжения',
+                'ремонт фасада',
+                'ремонт или замена внутреннего водостока',
+                'ремонт внутридомовых инженерных систем горячего водоснабжения (стояки)',
+                'ремонт пожарного водопровода',
+                'ремонт внутридомовых инженерных систем теплоснабжения (стояки)',
+                'ремонт внутридомовых инженерных систем холодного водоснабжения (стояки)',
+                'ремонт подвальных помещений, относящихся к общему имуществу собственников помещений',
+                'ремонт внутридомовых инженерных систем водоотведения (канализации) (стояки)']
+    num_cols = ['Количество этажей',
+                'Количество подъездов',
+                'Количество квартир',
+                'Общая площадь',
+                'num_lift',
+                'num_inc_pred',
+                'Год постройки'
+                ]
+    cat_cols = ['Серия проекта',
+                'Материал стен',
+                'Материал кровли',
+                'Тип жилищного фонда',
+                'Статус МКД',
+                'Is_lift'
+                ]
     return target_col, num_cols, cat_cols
-"""
 
-"""
-def create_df_inc_cap(df_sorted: pd.DataFrame, df_3: pd.DataFrame, df_4: pd.DataFrame):
-    # табл работ по кап рем за 2022
-    df_3_4 = create_df_3_4(df_3, df_4)
+def create_df_inc_cap(df: pd.DataFrame, df_3: pd.DataFrame, df_4: pd.DataFrame, train):
 
-    # число работ кап ремонта для каждого дома df_3_4.groupby("UNOM").size()
-    # добавим его к табл с домами и числом инцидентов
-    df_inc_cap = df_sorted.merge(
-        df_3_4.rename(columns={"UNOM": "unom"})
-        .groupby("unom")
-        .size()
-        .rename("num_works"),
-        how="left",
-        on="unom",
-    ).fillna(0)
+    # кол-во инцидентов не мб отрицательным
+    df[df.num_inc_pred < 0] = 0
+    df.num_inc_pred = df.num_inc_pred.astype(int)
 
-    return df_inc_cap
-"""
+    # для кап ремонта исключим дома, которые были построены недавно
+    #df = df[df['Год постройки'] < 2000]
+
+    #ограничим год постройки
+    df = df[df['Год постройки'] > 1850]
+
+    #train mode
+    if train == True:
+        # возьмем пересечение домов с табл кап рем
+        unom_list_1 = df.unom.astype(int).to_list() # all objects
+        unom_list_3 = df_3.UNOM.to_list() #objects for cap rem in 2022
+        unom_1 = set(unom_list_1) #18432 items
+        unom_3 = set(unom_list_3) #373 items
+        unom_for_cap = unom_1.intersection(unom_3)
+
+        df_cap = df[df.unom.isin(unom_for_cap)]
+
+        # табл работ по кап рем за 2022
+        df_3_4 = create_df_3_4(df_3, df_4)[['WORK_NAME', 'UNOM']]
+
+        all_work_names = df_3_4.WORK_NAME.unique()
+        works_for_unom_dict = {} # dict unom: work list
+        for u in unom_3: # cap work unoms
+            works_for_unom_dict[u] = list(df_3_4[df_3_4.UNOM == u].WORK_NAME)
+        for work_name in all_work_names: #all work names
+            col_work = []
+            for _, v in works_for_unom_dict.items():
+                if work_name in v: #if work in works list for unom
+                    col_work.append(1)
+                else:
+                    col_work.append(0)
+            df_cap.loc[:, work_name] = col_work
+
+        return df_cap
+
+    # predict mode
+    else:
+        return df
+    

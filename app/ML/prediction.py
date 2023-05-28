@@ -1,15 +1,24 @@
 from catboost import CatBoostRegressor
 import pandas as pd
-from data_preprocessing import prepare_df_1, columns_num_inc_model
+import numpy as np
+import tensorflow as tf
+from data_preprocessing import (
+    prepare_df_1,
+    columns_num_inc_model,
+    create_df_inc_cap,
+    columns_num_works_model,
+)
+from sklearn.preprocessing import StandardScaler
 
 
 def predict_num_inc_model(df_1: pd.DataFrame):
     """Predict number of incidents for 1 year for every object
     Preprocess df and add new column to initial df
-    Return sorted by predicted_num_inc dataFrame with big number of predicted incidents"""
+    Return dataFrame with number of predicted incidents"""
+
+    df = prepare_df_1(df_1)
 
     _, num_cols, cat_cols = columns_num_inc_model()
-    df = prepare_df_1(df_1)
     X = df[num_cols + cat_cols]
 
     boosting_model = CatBoostRegressor()
@@ -18,47 +27,72 @@ def predict_num_inc_model(df_1: pd.DataFrame):
     # Предсказания
     y_pred = boosting_model.predict(X).round()
 
-    # кол-во заявок не мб отрицательным
-    y_pred[y_pred < 0] = 0
-    y_pred = y_pred.astype(int)
+    df["num_inc_pred"] = y_pred
 
-    # отсортируем дома по кол-ву предсказанных заявок
-    df["predicted_num_inc"] = y_pred
-    df_sorted = df.sort_values(by="predicted_num_inc", ascending=False)
-
-    return df_sorted
+    return df
 
 
-'''
-def predict_cap_works(df_sorted):
-    return
-
-
-def predict_by_house(df_1: pd.DataFrame):
+def predict_by_house(df_1, df_3, df_4):
     """find the best candidates to capital repare by prediction:
     num_incidents
     num capital works
     names of cap works"""
 
     # предскажем кол-во инцидентов для дома за год
-    df_sorted = predict_num_inc_model(df_1)
+    df = predict_num_inc_model(df_1)
 
-    # для кап ремонта отберем те дома, по которым поступает много жалоб
-    df_sorted = df_sorted[df_sorted.predicted_num_inc > 300]
+    df = create_df_inc_cap(df, df_3, df_4, train=False)
 
-    # для кап ремонта исключим дома, которые были построены недавно
-    df_sorted = df_sorted[df_sorted["Год постройки"] < 2000]
-    df_sorted = df_sorted[df_sorted["Год постройки"] > 1850]
+    # выбираем данные
+    target_col, num_cols, cat_cols = columns_num_works_model()
 
-    # предскажем кол-во работ по кап ремонту
-    df_cap = predict_cap_works(df_sorted)
+    # Разделение данных на числовые и категориальные признаки
+    numerical_features = df[num_cols]
+    categorical_features = df[cat_cols].applymap(int)
+
+    # OHE
+    # encoder = OneHotEncoder(handle_unknown='ignore')
+    # categorical_features_encoded = encoder.fit_transform(categorical_features).toarray()
+
+    # Масштабирование числовых признаков
+    scaler = StandardScaler()
+    numerical_features_scaled = scaler.fit_transform(numerical_features)
+    categorical_features_scaled = scaler.fit_transform(categorical_features)
+
+    # Объединение числовых и закодированных категориальных признаков
+    X = np.concatenate((numerical_features_scaled, categorical_features_scaled), axis=1)
+
+    # Загрузка модели
+    model = tf.keras.models.load_model("Data/num_works_model.h5")
 
     # предскажем виды работ по кап ремонту
+    threshold = 0.5  # Порог вероятности
+    predictions = (model.predict(X) > threshold).astype(int)
+
+    # трансформируем в вектор наименований работ
+    works = []
+    num_works = []
+    for i in range(predictions.shape[0]):  # objects loop
+        work_list_i = []
+        num_works.append(predictions[i].sum())
+        for j in range(predictions.shape[1]):  # works loop
+            if predictions[i, j] == 1:
+                work_list_i.append(target_col[j])
+        works.append(work_list_i)
+
+    df["num_works"] = num_works  # добавим число работ
+    df["works"] = works
+
+    df_prediction = df[["unom", "works", "num_works", "Год постройки", "Is_lift"]]
 
     # удалим лифты из работ, если в доме нет лифта
 
+    df_prediction = df_prediction[["unom", "works", "num_works"]]
+    df_prediction = df_prediction[df_prediction.num_works > 0]
+    df_prediction = df_prediction.set_index(["unom"])
+    df_prediction = df_prediction.sort_values(by="num_works", ascending=False)
+
     return df_prediction
-'''
 
 
 def predict_by_house_and_inc(df_1: pd.DataFrame, df_2: pd.DataFrame):
