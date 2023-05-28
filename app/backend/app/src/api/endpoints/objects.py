@@ -30,6 +30,6 @@ async def object_list(
 @router.get("/{id}", response_model=MKDDetail)
 async def object_profile(id: int, model: PredictionModels, session: AsyncSession = Depends(deps.get_db)):
     """
-    Detailed description of some object
+    Detailed description of some object with predicted works according to chosen model
     """
     return await get_object_by_id(id=id, model=model, session=session)

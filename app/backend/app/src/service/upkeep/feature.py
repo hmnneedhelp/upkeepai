@@ -22,7 +22,7 @@ async def train_and_predict(session: AsyncSession, model: PredictionModels):
     )
     # train_num_inc_model(df_1, df_2)
     predict_num_inc_model(df_1)
-    #
+
     # loss, accuracy = train_cap_works_model(df_1, df_3, df_4)
     df_prediction = predict_by_house(df_1, df_3, df_4)
 

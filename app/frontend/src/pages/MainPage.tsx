@@ -16,6 +16,8 @@ const MainPage =() => {
     return(
         <>
         <div className="w-[25%] h-screen flex flex-col justify-start items-center shadow-inner fixed top-0 left-0">
+           <p>Мы не успели сделать полноценную фронтенд часть :(,
+               но к счастью вы можете свободно<a href="http://46.243.227.95:8000/docs#/"> потрогать API вручную!</a></p>
            <Link href={'/incident'} onClick={handleClickIncidents} className="border-[1px] w-80 text-center mt-10 my-10 border-black p-1 rounded-md hover:bg-blue-500 transition duration-300"> 
            <p>Предсказание на основе инцидентов</p>
            </Link>
