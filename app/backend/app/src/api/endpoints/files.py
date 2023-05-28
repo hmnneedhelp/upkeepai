@@ -14,5 +14,5 @@ async def file_download(
 ):
     path = await create_excel(model=model, session=session)
     return FileResponse(
-        path=path, filename="DocPredict.xlsx", media_type="multipart/form-data"
+        path=path, filename=f"{model.value}_predict.xlsx", media_type="multipart/form-data"
     )

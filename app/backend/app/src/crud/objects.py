@@ -6,8 +6,8 @@ from src.schema.objects import MKDShort, MKD, MKDDetail
 from src.schema.objects import Overhaul as OverhaulSchema
 from src.schema.objects import Incident as IncidentSchema
 from src.schema.objects import Coordinate as CoordinateSchema
-from src.schema.objects import IncidentPredict as IncidentPredictSchema
-from src.schema.objects import FeaturePredict as FeaturePredictSchema
+from src.schema.objects import Predict, PredictShort
+
 
 from src.schema.models import PredictionModels
 from src.db.session import *
@@ -17,21 +17,25 @@ from pydantic import parse_obj_as
 
 async def get(
     model: PredictionModels, limit: int, offset: int, session: AsyncSession
-) -> list[IncidentPredictSchema] | list[FeaturePredictSchema]:
+) -> list[Predict]:
     if model.value == "incident":
         table = IncidentPredict
-        schema = IncidentPredictSchema
-        stmt = select(table).limit(limit).offset(offset).order_by(table.num_works.desc())
     else:
         table = FeaturePredict
-        schema = FeaturePredictSchema
-        stmt = select(table).limit(limit).offset(offset)
+    stmt = select(Mkd.id,
+                  Mkd.name,
+                  table.unom,
+                  table.num_works,
+                  table.works_list).\
+        join(Mkd, Mkd.unom == table.unom).\
+        limit(limit).offset(offset).\
+        order_by(table.num_works.desc())
     result = await session.execute(stmt)
     result = result.all()
-    return [schema.from_orm(res[0]) for res in result]
+    return [Predict.from_orm(res) for res in result]
 
 
-async def get_object_by_id(session: AsyncSession, id: int) -> MKDDetail:
+async def get_object_by_id(model: PredictionModels, session: AsyncSession, id: int) -> MKDDetail:
     unom = await get_unom_by_id(id=id, session=session)
     if not unom:
         raise HTTPException(status_code=404, detail=f"Object with id={id} not exists")
@@ -41,11 +45,12 @@ async def get_object_by_id(session: AsyncSession, id: int) -> MKDDetail:
             get_overhaul_works(unom, session),
             get_mkd_incidents(unom, session),
             get_mkd_coordinates(unom, session),
+            get_predicted_works(unom, model, session)
         ]
     )
-    mkd, works, incidents, coordinates = result
+    mkd, works, incidents, coordinates, predict = result
     return MKDDetail(
-        mkd=mkd, overhauls=works, incidents=incidents, coordinates=coordinates
+        mkd=mkd, overhauls=works, incidents=incidents, coordinates=coordinates, predict=predict
     )
 
 
@@ -129,3 +134,18 @@ async def get_mkd_coordinates(unom: int, session: AsyncSession):
     if not coords:
         return None
     return CoordinateSchema.from_orm(coords)
+
+async def get_predicted_works(unom: int, model: PredictionModels, session: AsyncSession):
+    if model.value == 'incident':
+        table = IncidentPredict
+    else:
+        table = FeaturePredict
+    stmt = select(table.num_works, table.works_list).where(
+        table.unom == unom
+    )
+    result = await session.execute(stmt)
+    result = result.fetchone()
+    if not result:
+        return None
+    a = PredictShort.from_orm(result)
+    return a

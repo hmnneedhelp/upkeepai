@@ -12,12 +12,14 @@ async def create_excel(model: PredictionModels, session: AsyncSession) -> Path:
     """
     if model.value == "incident":
         table = IncidentPredict
-        stmt = select(table.unom, table.works_list, table.num_works)
-        labels = ("UNOM", "Список работ", "Кол-во работ")
     else:
         table = FeaturePredict
-        stmt = select(table.id, table.name, table.unom, table.predicted_num)
-        labels = ("ID", "Name", "unom", "predicted_num")
+    stmt = select(Mkd.id,
+                  Mkd.name,
+                  table.unom,
+                  table.works_list,
+                  table.num_works).join(Mkd, Mkd.unom == table.unom).order_by(table.num_works.desc())
+    labels = ("ID", "Адрес", "UNOM", "Список работ", "Кол-во работ")
 
     result = await session.execute(stmt)
     result = result.all()
@@ -25,11 +27,8 @@ async def create_excel(model: PredictionModels, session: AsyncSession) -> Path:
     ws = wb.active
     ws.append(labels)
 
-    if model.value == "incident":
-        for res in result:
-            ws.append((res.unom, '\n'.join(res.works_list), res.num_works))
-    else:
-        [ws.append(tuple(row)) for row in result]
-    path = Path("/app/backend/app/static/DocPredict.xlsx")
+    for res in result:
+        ws.append((res.id, res.name, res.unom, '\n'.join(res.works_list), res.num_works))
+    path = Path(f"/app/backend/app/static/{model.value}_predict.xlsx")
     wb.save(path)
     return path

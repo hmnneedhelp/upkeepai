@@ -81,14 +81,9 @@ class Coordinate(BaseModel):
         orm_mode = True
 
 
-class MKDDetail(BaseModel):
-    mkd: MKD
-    coordinates: Coordinate | None
-    overhauls: list[Overhaul] | None
-    incidents: list[Incident] | None
-
-
-class IncidentPredict(BaseModel):
+class Predict(BaseModel):
+    id: int
+    name: str
     unom: int
     works_list: list[str]
     num_works: int
@@ -97,11 +92,16 @@ class IncidentPredict(BaseModel):
         orm_mode = True
 
 
-class FeaturePredict(BaseModel):
-    id: int
-    name: str
-    unom: int
-    predicted_num: int
+class PredictShort(BaseModel):
+    works_list: list[str]
+    num_works: int
 
     class Config:
         orm_mode = True
+
+class MKDDetail(BaseModel):
+    mkd: MKD
+    coordinates: Coordinate | None
+    overhauls: list[Overhaul] | None
+    incidents: list[Incident] | None
+    predict: PredictShort | None

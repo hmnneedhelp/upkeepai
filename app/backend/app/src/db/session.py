@@ -201,7 +201,6 @@ class IncidentPredict(Base):
 
 class FeaturePredict(Base):
     __tablename__ = "feature_predict"
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    unom = Column(Integer, unique=True)
-    predicted_num = Column(Integer)
+    unom = Column(Integer, primary_key=True)
+    works_list = Column(String)
+    num_works = Column(Integer)

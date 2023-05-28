@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException
 from src.api import deps
-from src.schema.objects import MKDDetail, IncidentPredict, FeaturePredict
+from src.schema.objects import MKDDetail, Predict
 from src.schema.models import PredictionModels
 from src.crud.objects import get as get_objects
 from src.crud.objects import get_object_by_id
@@ -10,7 +10,7 @@ from src.service.service import model_manager
 router = APIRouter()
 
 
-@router.get("/", response_model=list[IncidentPredict] | list[FeaturePredict])
+@router.get("/", response_model=list[Predict])
 async def object_list(
     model: PredictionModels,
     limit: int = 10,
@@ -22,14 +22,14 @@ async def object_list(
     feature -> based on object properties,
     incident -> based on object incidents
     """
-    if offset == 0:
-        await model_manager(model=model, session=session)
+    # if offset == 0:
+    #     await model_manager(model=model, session=session)
     return await get_objects(model=model, limit=limit, offset=offset, session=session)
 
 
 @router.get("/{id}", response_model=MKDDetail)
-async def object_profile(id: int, session: AsyncSession = Depends(deps.get_db)):
+async def object_profile(id: int, model: PredictionModels, session: AsyncSession = Depends(deps.get_db)):
     """
     Detailed description of some object
     """
-    return await get_object_by_id(id=id, session=session)
+    return await get_object_by_id(id=id, model=model, session=session)

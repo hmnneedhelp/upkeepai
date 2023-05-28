@@ -1,6 +1,14 @@
 version: '3.8'
 
 services:
+  frontend:
+    build: ./app/frontend
+    ports:
+      - 3000:3000
+  nginx:
+    build: ./app/frontend/nginx
+    ports:
+      - 80:80
 
   backend:
     build: ./app/backend/

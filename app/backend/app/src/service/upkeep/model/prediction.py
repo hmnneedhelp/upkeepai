@@ -1,9 +1,14 @@
 from catboost import CatBoostRegressor
 import pandas as pd
+import numpy as np
+import tensorflow as tf
 from src.service.upkeep.model.data_preprocessing import (
     prepare_df_1,
     columns_num_inc_model,
+    create_df_inc_cap,
+    columns_num_works_model,
 )
+from sklearn.preprocessing import StandardScaler
 
 
 def predict_num_inc_model(df_1: pd.DataFrame):
@@ -12,8 +17,9 @@ def predict_num_inc_model(df_1: pd.DataFrame):
     Return sorted by predicted_num_inc dataFrame with big number of predicted incidents
     """
 
-    _, num_cols, cat_cols = columns_num_inc_model()
     df = prepare_df_1(df_1)
+
+    _, num_cols, cat_cols = columns_num_inc_model()
     X = df[num_cols + cat_cols]
 
     boosting_model = CatBoostRegressor()
@@ -22,18 +28,9 @@ def predict_num_inc_model(df_1: pd.DataFrame):
     # Предсказания
     y_pred = boosting_model.predict(X).round()
 
-    # кол-во заявок не мб отрицательным
-    y_pred[y_pred < 0] = 0
-    y_pred = y_pred.astype(int)
+    df["num_inc_pred"] = y_pred
 
-    # отсортируем дома по кол-ву предсказанных заявок
-    df["predicted_num_inc"] = y_pred
-    df_sorted = df.sort_values(by="predicted_num_inc", ascending=False)
-
-    # для кап ремонта отберем те, по которым поступает много жалоб
-    df_cap = df_sorted[df_sorted.predicted_num_inc > 300]
-
-    return df_cap
+    return df
 
 
 def predict_by_house_and_inc(df_1: pd.DataFrame, df_2: pd.DataFrame):
@@ -101,6 +98,77 @@ def predict_by_house_and_inc(df_1: pd.DataFrame, df_2: pd.DataFrame):
     # prediction
     df_prediction = df__[["works_list", "num_works"]]
     df_prediction = df_prediction[df_prediction.num_works != 0]
+    df_prediction = df_prediction.sort_values(by="num_works", ascending=False)
+
+    return df_prediction
+
+def predict_by_house(df_1, df_3, df_4):
+    """find the best candidates to capital repare by prediction:
+    num_incidents
+    num capital works
+    names of cap works"""
+
+    # предскажем кол-во инцидентов для дома за год
+    df = predict_num_inc_model(df_1)
+
+    df = create_df_inc_cap(df, df_3, df_4, train=False)
+    # выбираем данные
+    target_col, num_cols, cat_cols = columns_num_works_model()
+
+    # Разделение данных на числовые и категориальные признаки
+    numerical_features = df[num_cols]
+    categorical_features = df[cat_cols].applymap(int)
+
+    # OHE
+    # encoder = OneHotEncoder(handle_unknown='ignore')
+    # categorical_features_encoded = encoder.fit_transform(categorical_features).toarray()
+
+    # Масштабирование числовых признаков
+    scaler = StandardScaler()
+    numerical_features_scaled = scaler.fit_transform(numerical_features)
+    categorical_features_scaled = scaler.fit_transform(categorical_features)
+
+    # Объединение числовых и закодированных категориальных признаков
+    X = np.concatenate((numerical_features_scaled, categorical_features_scaled), axis=1)
+
+    # Загрузка модели
+    model = tf.keras.models.load_model("/app/backend/app/src/service/upkeep/model/num_works_model.h5")
+
+    # предскажем виды работ по кап ремонту
+    threshold = 0.35  # Порог вероятности
+    predictions = (model.predict(X) > threshold).astype(int)
+
+    # трансформируем в вектор наименований работ
+    works = []
+    num_works = []
+    for i in range(predictions.shape[0]):  # objects loop
+        work_list_i = []
+        num_works.append(predictions[i].sum())
+        for j in range(predictions.shape[1]):  # works loop
+            if predictions[i, j] == 1:
+                work_list_i.append(target_col[j])
+        works.append(work_list_i)
+
+    df["num_works"] = num_works  # добавим число работ
+    df["works_list"] = works
+
+    df_prediction = df[["unom", "works_list", "num_works", "Год постройки", "Is_lift"]]
+    # удалим лифты из работ, если в доме нет лифта
+
+    def remove_from_list(row):
+        if not row['Is_lift']:
+            pattern = 'лифт'
+            works_list = row['works_list']
+            if works_list:
+                [works_list.remove(work) for work in works_list if pattern in work]
+            new_num = len(works_list)
+            return pd.Series({'works_list': works_list, 'num_works': new_num})
+        return row[['works_list', 'num_works']]
+    counter = 0
+    df_prediction[['works_list', 'num_works']] = df_prediction.apply(remove_from_list, axis=1)
+    df_prediction = df_prediction[["unom", "works_list", "num_works"]]
+    df_prediction = df_prediction[df_prediction.num_works > 0]
+    df_prediction = df_prediction.set_index(["unom"])
     df_prediction = df_prediction.sort_values(by="num_works", ascending=False)
 
     return df_prediction
