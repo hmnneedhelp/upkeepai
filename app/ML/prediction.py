@@ -66,7 +66,7 @@ def predict_by_house(df_1, df_3, df_4):
     model = tf.keras.models.load_model("Data/num_works_model.h5")
 
     # предскажем виды работ по кап ремонту
-    threshold = 0.5  # Порог вероятности
+    threshold = 0.35  # Порог вероятности
     predictions = (model.predict(X) > threshold).astype(int)
 
     # трансформируем в вектор наименований работ
