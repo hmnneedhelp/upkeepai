@@ -24,7 +24,7 @@ export const getServerSideProps = async (context) => {
         <title>{contact.name} </title>
       </Head>
       
-      <Link href={'/incident'} className="my-5 top-5 left-5"> <p>Назад</p> </Link>
+      <Link href={'../'} className="my-5 top-5 left-5 border-[1px] border-black w-32 p-1 text-center rounded-md hover:bg-green-500 transition duration-300 text-black cursor-pointer"> <p>Назад</p> </Link>
       <h3>{contact.name}</h3>
     <IncidentInfo contact={contact} />
     </main>

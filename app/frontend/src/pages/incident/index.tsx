@@ -24,11 +24,11 @@ const Incidents = ({ initialData}) => {
 
     return (
         <div className='bg-white flex flex-col justify-center w-[2/3] ml-[30%] py-10'>
-            <Link href={'../'} className='' ><p>Предыдущая страница</p></Link>
             {data?.length === 0 ? (
                 <div>Загружается</div>
             ) : (data?.map(address => (
                     <div className='w-[80%] my-5' key={address.id}>
+                        <div className="w-[80%] h-[1px] bg-slate-300"></div>
                         <Link href={'/incident/'+ address.id}>
                             <p className='text-left text-black mb-1'>{address.name} </p> <p className='text-left text-black mb-1'>Предсказано работ: {address.num_works}</p>
                             <span className='text-left text-black'>Один из возможных: {address.works_list[1]}</span>
@@ -40,12 +40,12 @@ const Incidents = ({ initialData}) => {
                 {offset === 0 ?(
                     <div></div>
                 ) :(
-                    <button onClick={handleClickMinus} className="mr-10 text-blue-500">Предыдущие</button>
+                    <button onClick={handleClickMinus} className="mr-10 border-[1px] border-black w-32 p-1 text-center rounded-md hover:bg-green-500 transition duration-300 text-black cursor-pointer">Предыдущие</button>
                 )}
                  {offset === 195 ?(
                     <div></div>
                 ) :(
-                <button onClick={handleClickPlus} className="text-blue-500">Следующие</button>
+                <button onClick={handleClickPlus} className="border-[1px] border-black w-32 p-1 text-center rounded-md hover:bg-green-500 transition duration-300 text-black cursor-pointer">Следующие</button>
                 )}
             </div>
         </div>

@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import React from 'react';
-const Addresses = ({ initialData}) => {
+const Property = ({ initialData}) => {
     const [data, setData] = useState(initialData);
     const [limit, setLimit] = useState(15);
     const [offset, setOffset] = useState(0);
     
     useEffect(() => {
         const fetchData = async () => {
-            const response = await fetch(`http://46.243.227.95:8000/objects/?limit=15&offset=${offset}&model=feature`);
+            const response = await fetch(`http://46.243.227.95:8000/objects/?model=feature&limit=15&offset=${offset}`);
             const newData = await response.json();
             setData(newData);
         };
@@ -22,14 +22,15 @@ const Addresses = ({ initialData}) => {
         setOffset(offset - 15)
     }
     return (
-        <div className='bg-white flex flex-col justify-center items-center pt-10'>
-            <Link href={'../'} className='' ><p>Предыдущая страница</p></Link>
+        <div className='bg-white flex flex-col justify-center items-center pt-10 addresses '>
             {data?.length === 0 ? (
                 <div>Загружается</div>
             ) : (data?.map(address => (
                     <div  key={address.id}>
-                        <Link href={'/property/'+ address.id}>
-                            <p className='text-left'>{address.name}</p>
+                        
+                        <div className="w-80 h-[1px] bg-slate-300"></div>
+                        <Link href={'/property/'+ address.id} className='text-black ' >
+                            <p className='text-left my-1'>{address.name}</p>
                         </Link>
                     </div>
                 ))
@@ -38,22 +39,22 @@ const Addresses = ({ initialData}) => {
                 {offset === 0 ?(
                     <div></div>
                 ) :(
-                    <button onClick={handleClickMinus} className="mr-10 text-blue-500">Предыдущие</button>
+                    <button onClick={handleClickMinus} className="border-[1px] border-black w-32 p-1 text-center rounded-md hover:bg-green-500 transition duration-300 text-black cursor-pointer mr-5">Предыдущие</button>
                 )}
                  {offset === 195 ?(
                     <div></div>
                 ) :(
-                <button onClick={handleClickPlus} className="text-blue-500">Следующие</button>
+                <button onClick={handleClickPlus} className="border-[1px] border-black w-32 p-1 text-center rounded-md hover:bg-green-500 transition duration-300 text-black cursor-pointer">Следующие</button>
                 )}
             </div>
         </div>
     )
 };
 
-Addresses.getInitialProps = async () => {
-    const response = await fetch("http://46.243.227.95:8000/objects/?limit=15&offset=0&model=feature");
+Property.getInitialProps = async () => {
+    const response = await fetch("http://46.243.227.95:8000/objects/?model=feature&limit=10&offset=0");
     const initialData = await response.json();
     return { initialData };
 };
 
-export default Addresses;
+export default Property;

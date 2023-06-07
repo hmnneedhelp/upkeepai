@@ -55,32 +55,13 @@ const ContactInfo = ({ contact }) => {
         return <p>{fieldName}: Данных не найдено</p>;
       } else {
         return( 
-       <p>{fieldName}:  {fieldValue}</p>
+        <>
+        <div>
+          <div className="w-80 h-[1px] bg-slate-300"></div>
+          <p>{fieldName}:  {fieldValue}</p>
+        </div>
+       </>
       )}
-    };
-
-    const fieldNames2 = {
-      'contact.incidents.id': 'Номер жалобы',
-      'incidents.name': 'Причина жалобы',
-      'incidents.opened': 'Дата поступления жалобы',
-      'incidents.closed': 'Дата решения',
-    };
-
-    const getValueByPath2 = (object, path) => {
-      return path.reduce((obj2, key2) => (obj2 && obj2[key2] !== 'undefined') ? obj2[key2] : null, object);
-    };
-
-    const getMarkup2 = (fieldValue2, fieldName2) =>{
-      if (fieldValue2 == null){
-        return <p>{fieldName2}: Данных не найдено </p>
-        
-      } else{
-        return(
-          <div className="border-b-2 border-grey-300">
-            <p>{fieldName2} : {fieldValue2}</p>
-          </div>
-        )
-      }
     };
 
     return (
@@ -88,6 +69,7 @@ const ContactInfo = ({ contact }) => {
         <h3>{contact?.mkd?.name}</h3>
         <h4>Идентификатор - {contact?.mkd?.id}</h4>
         <div className="text-left mx-auto">
+        <hr className='h-[1px] w-80 bg-slate-200'/>
           {Object.keys(fieldNames).map(key => getMarkup(getValueByPath(contact, key.split('.')), fieldNames[key]))}
         </div>
         <div className="mt-5 pb-10">

@@ -30,7 +30,10 @@ const IncidentInfo = ({ contact }) => {
         return <p>{fieldName}: Данных не найдено</p>;
       } else {
         return( 
+          <>
+          <hr />
        <p>{fieldName}:  {fieldValue}</p>
+       </>
       )} 
     };
     return (
