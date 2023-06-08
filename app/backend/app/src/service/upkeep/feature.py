@@ -1,8 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.schema.models import PredictionModels
 from src.service.upkeep.model.prediction import predict_num_inc_model, predict_by_house
-from src.service.upkeep.model.model_training import train_num_inc_model, train_cap_works_model
+from src.service.upkeep.model.model_training import (
+    train_num_inc_model,
+    train_cap_works_model,
+)
 from src.service.upkeep.utils import mkd_df, incidents_df, df_to_db, overhauls_df
+from src.service.upkeep.model import works
 import pandas as pd
 import warnings
 
@@ -17,9 +21,7 @@ async def train_and_predict(session: AsyncSession, model: PredictionModels):
     # create DataFrame from database with cap repair
     df_3 = await overhauls_df(session)
     # train and predict
-    df_4 = pd.read_excel(
-        "/app/backend/app/src/service/upkeep/model/4_Виды работ по капитальному ремонту многоквартирных домов.xlsx", header=1
-    )
+    df_4 = works.df_4
     # train_num_inc_model(df_1, df_2)
     predict_num_inc_model(df_1)
 

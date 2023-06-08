@@ -16,6 +16,7 @@ async def incidents_df(session: AsyncSession):
     df = await session.run_sync(_get_incidents)
     return df
 
+
 async def overhauls_df(session: AsyncSession):
     df = await session.run_sync(_get_overhauls)
     return df
@@ -49,6 +50,7 @@ def _get_incidents(session: AsyncSession):
     conn = session.connection()
     query = select(Incident)
     return pd.read_sql_query(query, conn)
+
 
 def _get_overhauls(session: AsyncSession):
     conn = session.connection()

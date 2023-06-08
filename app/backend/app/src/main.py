@@ -18,6 +18,7 @@ app.include_router(api_router)
 
 @app.get("/ping")
 async def ping(session: AsyncSession = Depends(get_db)):
-    # from src.service.unknown import predict, train
-    # await predict(session)
+    from src.service.upkeep import intersection
+
+    # await intersection.make_intersection(session)
     return {"ping": "pong"}

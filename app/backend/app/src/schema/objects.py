@@ -62,6 +62,10 @@ class Overhaul(BaseModel):
         orm_mode = True
 
 
+class OverhaulCreate(Overhaul):
+    unom: int
+
+
 class Incident(BaseModel):
     id: int
     name: str
@@ -71,6 +75,10 @@ class Incident(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class IncidentCreate(Incident):
+    unom: int
 
 
 class Coordinate(BaseModel):
@@ -99,9 +107,23 @@ class PredictShort(BaseModel):
     class Config:
         orm_mode = True
 
+
 class MKDDetail(BaseModel):
     mkd: MKD
     coordinates: Coordinate | None
     overhauls: list[Overhaul] | None
     incidents: list[Incident] | None
     predict: PredictShort | None
+
+
+class MKDList(BaseModel):
+    id: int
+    name: str
+    unom: int
+    year_built: int
+    year_reconstructed: int | None
+    incidents: int
+    overhauls: int
+
+    class Config:
+        orm_mode = True

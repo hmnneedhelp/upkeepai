@@ -1,9 +1,11 @@
 import asyncio
 
 from fastapi import HTTPException
-from sqlalchemy import select, outerjoin
-from src.schema.objects import MKDShort, MKD, MKDDetail
+from sqlalchemy import select, outerjoin, insert, func
+from src.schema.objects import MKDShort, MKD, MKDDetail, MKDList
 from src.schema.objects import Overhaul as OverhaulSchema
+from src.schema.objects import OverhaulCreate as OverhaulCreateSchema
+from src.schema.objects import IncidentCreate as IncidentCreateSchema
 from src.schema.objects import Incident as IncidentSchema
 from src.schema.objects import Coordinate as CoordinateSchema
 from src.schema.objects import Predict, PredictShort
@@ -12,7 +14,35 @@ from src.schema.objects import Predict, PredictShort
 from src.schema.models import PredictionModels
 from src.db.session import *
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import DatabaseError
 from pydantic import parse_obj_as
+
+
+async def get_list(
+    model: PredictionModels, limit: int, offset: int, session: AsyncSession
+) -> list[MKDList]:
+    if model.value == "incident":
+        table = IncidentPredict
+    else:
+        table = FeaturePredict
+    stmt = (
+        select(Mkd.id,
+               Mkd.name,
+               table.unom,
+               Mkd.year_built,
+               Mkd.year_reconstructed,
+               func.count(Incident.id).label("incidents"),
+               table.num_works.label("overhauls"))
+        .join(Mkd, Mkd.unom == table.unom)
+        .join(Incident, Mkd.unom == Incident.unom)
+        .group_by(Mkd.id, Mkd.name, table.unom, Mkd.year_built, Mkd.year_reconstructed, table.num_works)
+        .limit(limit)
+        .offset(offset)
+        .order_by(table.num_works.desc())
+    )
+    result = await session.execute(stmt)
+    result = result.all()
+    return [MKDList.from_orm(res) for res in result]
 
 
 async def get(
@@ -22,20 +52,21 @@ async def get(
         table = IncidentPredict
     else:
         table = FeaturePredict
-    stmt = select(Mkd.id,
-                  Mkd.name,
-                  table.unom,
-                  table.num_works,
-                  table.works_list).\
-        join(Mkd, Mkd.unom == table.unom).\
-        limit(limit).offset(offset).\
-        order_by(table.num_works.desc())
+    stmt = (
+        select(Mkd.id, Mkd.name, table.unom, table.num_works, table.works_list)
+        .join(Mkd, Mkd.unom == table.unom)
+        .limit(limit)
+        .offset(offset)
+        .order_by(table.num_works.desc())
+    )
     result = await session.execute(stmt)
     result = result.all()
     return [Predict.from_orm(res) for res in result]
 
 
-async def get_object_by_id(model: PredictionModels, session: AsyncSession, id: int) -> MKDDetail:
+async def get_object_by_id(
+    model: PredictionModels, session: AsyncSession, id: int
+) -> MKDDetail:
     unom = await get_unom_by_id(id=id, session=session)
     if not unom:
         raise HTTPException(status_code=404, detail=f"Object with id={id} not exists")
@@ -45,12 +76,16 @@ async def get_object_by_id(model: PredictionModels, session: AsyncSession, id: i
             get_overhaul_works(unom, session),
             get_mkd_incidents(unom, session),
             get_mkd_coordinates(unom, session),
-            get_predicted_works(unom, model, session)
+            get_predicted_works(unom, model, session),
         ]
     )
     mkd, works, incidents, coordinates, predict = result
     return MKDDetail(
-        mkd=mkd, overhauls=works, incidents=incidents, coordinates=coordinates, predict=predict
+        mkd=mkd,
+        overhauls=works,
+        incidents=incidents,
+        coordinates=coordinates,
+        predict=predict,
     )
 
 
@@ -135,17 +170,67 @@ async def get_mkd_coordinates(unom: int, session: AsyncSession):
         return None
     return CoordinateSchema.from_orm(coords)
 
-async def get_predicted_works(unom: int, model: PredictionModels, session: AsyncSession):
-    if model.value == 'incident':
+
+async def get_predicted_works(
+    unom: int, model: PredictionModels, session: AsyncSession
+):
+    if model.value == "incident":
         table = IncidentPredict
     else:
         table = FeaturePredict
-    stmt = select(table.num_works, table.works_list).where(
-        table.unom == unom
-    )
+    stmt = select(table.num_works, table.works_list).where(table.unom == unom)
     result = await session.execute(stmt)
     result = result.fetchone()
     if not result:
         return None
     a = PredictShort.from_orm(result)
     return a
+
+
+async def get_objects_by_pattern(pattern: str, session: AsyncSession):
+    name = ""
+    for ch in pattern:
+        if ch.isalnum():
+            name += ch
+        else:
+            name += "%"
+    stmt = select(
+        Mkd.id,
+        Mkd.name,
+    ).where(Mkd.name.ilike(f"%{name}%"))
+    objects = await session.execute(stmt)
+    objects = objects.all()
+    return [MKDShort.from_orm(obj) for obj in objects]
+
+
+async def insert_overhaul(work: OverhaulCreateSchema, session: AsyncSession):
+    stmt = insert(Overhaul).values(period=work.period,
+                                   name=work.name,
+                                   num_entrance=work.num_entrance,
+                                   elev_num=work.elev_num,
+                                   plan_start=work.plan_start,
+                                   plan_end=work.plan_end,
+                                   fact_start=work.fact_start,
+                                   fact_end=work.fact_end,
+                                   unom=work.unom)
+    try:
+        result = await session.execute(stmt)
+        # await session.commit()
+    except DatabaseError as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def insert_incident(incident: IncidentCreateSchema, session: AsyncSession):
+    stmt = insert(Incident).values(id=incident.id,
+                                   name=incident.name,
+                                   source=incident.source,
+                                   opened=incident.opened,
+                                   closed=incident.closed,
+                                   unom=incident.unom)
+    try:
+        result = await session.execute(stmt)
+        # await session.commit()
+    except DatabaseError as e:
+        await session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))

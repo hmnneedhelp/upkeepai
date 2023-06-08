@@ -2,7 +2,3 @@ data.dump
 ultimate.dump
 app/catboost_info
 **/*cache
-**/*.csv
-**/*.json
-**/*.xlsx
-!**/4_Виды работ по капитальному ремонту многоквартирных домов.xlsx

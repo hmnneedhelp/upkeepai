@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 
+
 def train_num_inc_model(df_1: pd.DataFrame, df_2: pd.DataFrame):
     """Train the Model for predict number of incidents for 1 year for every object"""
 

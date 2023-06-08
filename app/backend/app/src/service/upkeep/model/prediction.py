@@ -102,6 +102,7 @@ def predict_by_house_and_inc(df_1: pd.DataFrame, df_2: pd.DataFrame):
 
     return df_prediction
 
+
 def predict_by_house(df_1, df_3, df_4):
     """find the best candidates to capital repare by prediction:
     num_incidents
@@ -132,7 +133,9 @@ def predict_by_house(df_1, df_3, df_4):
     X = np.concatenate((numerical_features_scaled, categorical_features_scaled), axis=1)
 
     # Загрузка модели
-    model = tf.keras.models.load_model("/app/backend/app/src/service/upkeep/model/num_works_model.h5")
+    model = tf.keras.models.load_model(
+        "/app/backend/app/src/service/upkeep/model/num_works_model.h5"
+    )
 
     # предскажем виды работ по кап ремонту
     threshold = 0.35  # Порог вероятности
@@ -156,16 +159,19 @@ def predict_by_house(df_1, df_3, df_4):
     # удалим лифты из работ, если в доме нет лифта
 
     def remove_from_list(row):
-        if not row['Is_lift']:
-            pattern = 'лифт'
-            works_list = row['works_list']
+        if not row["Is_lift"]:
+            pattern = "лифт"
+            works_list = row["works_list"]
             if works_list:
                 [works_list.remove(work) for work in works_list if pattern in work]
             new_num = len(works_list)
-            return pd.Series({'works_list': works_list, 'num_works': new_num})
-        return row[['works_list', 'num_works']]
+            return pd.Series({"works_list": works_list, "num_works": new_num})
+        return row[["works_list", "num_works"]]
+
     counter = 0
-    df_prediction[['works_list', 'num_works']] = df_prediction.apply(remove_from_list, axis=1)
+    df_prediction[["works_list", "num_works"]] = df_prediction.apply(
+        remove_from_list, axis=1
+    )
     df_prediction = df_prediction[["unom", "works_list", "num_works"]]
     df_prediction = df_prediction[df_prediction.num_works > 0]
     df_prediction = df_prediction.set_index(["unom"])
