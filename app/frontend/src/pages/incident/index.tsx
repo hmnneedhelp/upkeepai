@@ -7,7 +7,7 @@ const Incidents = ({ initialData}) => {
     const [offset, setOffset] = useState(0);
     useEffect(() => {
         const fetchData = async () => {
-            const response = await fetch(`http://46.243.227.95:8000/objects/?limit=${limit}&offset=${offset}&model=incident`);
+            const response = await fetch(`http://46.243.227.95:8000/objects/list?limit=${limit}&offset=${offset}&model=incident`);
             const newData = await response.json();
             setData(newData);
         };

@@ -8,7 +8,7 @@ const Objects = ({ initialData}) => {
   const [offset, setOffset] = useState(0);
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(`http://46.243.227.95:8000/objects/list?model=feature&limit=15&offset=${offset}`);
+      const response = await fetch(`http://46.243.227.95:8000/objects/list?model=incident&limit=10&offset=${offset}`);
       const newData = await response.json();
       setData(newData);
     };
@@ -33,22 +33,27 @@ const Objects = ({ initialData}) => {
             <tr className='border-2 border-black'>
               <th className='border-2 border-black'>Наименование объекта</th>
               <th className='border-2 border-black'>Год постройки</th>
-              <th className='border-2 border-black'>Год реконструкции</th>
+              <th className='border-2 border-black'>Количество квартир</th>
               <th className='border-2 border-black'>Жалоб жителей</th>
               <th className='border-2 border-black'>Количество капремонтов</th>
             </tr>
           </thead>
-          <tbody>
             {data?.map((address, index) => (
-              <tr key={index} className='border-2 border-black'>
-                <td className='border-2 border-black'>{address.name}</td>
+          <tbody key={index} >
+            
+              <tr className='border-2 border-black'>
+            <Link href={'/incident/' + address.id}>
+                <td className=''>{address.name}</td>
+              </Link>
                 <td className='border-2 border-black text-center'>{address.year_built}</td>
-                <td className='border-2 border-black text-center'>{address.year_reconstructed}</td>
+                <td className='border-2 border-black text-center'>{address.num_apartments}</td>
                 <td className='border-2 border-black text-center'>{address.incidents}</td>
                 <td className='border-2 border-black text-center'>{address.overhauls}</td>
+               
               </tr>
-            ))}
           </tbody>
+          
+          ))}
         </table>
       )}
       <div className='flex justify-between mt-5'>
@@ -68,7 +73,7 @@ const Objects = ({ initialData}) => {
 };
 
 Objects.getInitialProps = async () => {
-  const response = await fetch("http://46.243.227.95:8000/objects/list?model=feature&limit=10&offset=0");
+  const response = await fetch("http://46.243.227.95:8000/objects/list?model=incident&limit=10&offset=0");
   const initialData = await response.json();
   return { initialData };
 };

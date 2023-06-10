@@ -42,7 +42,11 @@ const IncidentInfo = ({ contact }) => {
         <h4>Идентификатор - {contact?.mkd?.id}</h4>
         <div className="text-left mx-auto">
           <p>Общее количество предсказанных работ: {contact?.predict?.num_works}</p>
-          <p className="max-w-[700px] my-5">Список предсказанных работ: {contact?.predict?.works_list + '; '}</p>
+          <p className="max-w-[700px] my-5">Список предсказанных работ: </p>{contact.predict.works_list.map(works_list =>(
+            <ul key={works_list} className="list-disc">
+              <li>{works_list + ' 1 усл. ед'}</li>
+            </ul>
+          ))}
         </div>
       </main>
     );

@@ -18,32 +18,16 @@ const ContactInfo = ({ contact }) => {
       );
     }
     const fieldNames = {
-      "mkd.year_reconstructed": "Год реконструкции",
-      "mkd.year_built": "Год постройки",
-      "mkd.form_of_ownership": "Форма собственности",
       "mkd.series_of_project": "Серия проекта", //
       "mkd.num_floors": "Количество этажей", //
       "mkd.num_entrances": 'Количество входов', //
       "mkd.num_apartments": "Количество квартир", //
+      "mkd.num_passenger_elevators":"Количество лифтов",
       "mkd.total_area":"Общая площадь", // пассажирские добавить
-      "mkd.living_area":"Жилая площадь",
-      "mkd.non_living_area": "Нежилая площадь",
-      "mkd.building_volume": "Объем здания",
-      "mkd.wear_and_tear":"Износ здания",
-      "mkd.energy_efficiency":"Энергоэффективность",
       "mkd.wall_material":"Материал стен", //
       "mkd.roof_material":"Материал крыши", //
-      "mkd.accident_rate":"Аварийность",
-      "mkd.num_passenger_elevators": "Количество пассажирских лифтов",
-      "mkd.num_freight_passenger_elevators":"Количество грузовых лифтов",
-      "mkd.roof_cleaning":"Очередь уборки крыши",
-      "mkd.roofing_material":"Материал крыши",
-      "mkd.unom":"UNOM",
       "mkd.housing_stock":"Тип здания", //
       "mkd.mkd_status":"Статус МКД", //
-      "mkd.mkd_management_status":"Статус управления МКД",
-      "mkd.reason_for_status_change":"Причина смены статуса",
-      "mkd.mkd_category":"Категория МКД",
     };
 
     const getValueByPath = (object, path) => {
@@ -74,6 +58,14 @@ const ContactInfo = ({ contact }) => {
         </div>
         <div className="mt-5 pb-10">
           <p>Общее количество жалоб: {contact?.incidents?.length}</p>
+        </div>
+        <div className="text-left mx-auto">
+          <p>Общее количество предсказанных работ: {contact?.predict?.num_works}</p>
+          <p className="w-80 my-5">Список предсказанных работ: </p>{contact?.predict?.works_list?.map(works_list =>(
+            <ul key={works_list} className="list-disc">
+              <li>{works_list + ' 1 усл. ед'}</li>
+            </ul>
+          ))}
         </div>
       </main>
     );

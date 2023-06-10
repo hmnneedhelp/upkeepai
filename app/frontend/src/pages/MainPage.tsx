@@ -3,8 +3,9 @@ import Link from "next/link";
 import React, {useState} from 'react';
 import Incidents from "./incident";
 import Image from "next/image";
-import Objects from "./Objects";
+import ObjectsList from "./ObjectsList";
 import { Main } from "next/document";
+import Search from './search/Search'
 const MainPage =() => {
     const [showIncidents, setShowIncidents] = useState(false)
     const [showProperty, setShowProperty] = useState(false)
@@ -14,6 +15,8 @@ const MainPage =() => {
             setShowObjects(false)
         }else{
             setShowObjects(true)
+            setShowIncidents(false)
+            setShowProperty(false)
         }
     }
     const handleClickIncidents = async () =>{
@@ -21,6 +24,8 @@ const MainPage =() => {
             setShowIncidents(false)
         }else{
             setShowIncidents(true)
+            setShowObjects(false)
+            setShowProperty(false)
         }
         // const res = await fetch('http://46.243.227.95:8000/model/incident');
         // const cModel = 'incident';
@@ -31,6 +36,8 @@ const MainPage =() => {
             setShowProperty(false)
         }else{
             setShowProperty(true)
+            setShowIncidents(false)
+            setShowObjects(false)
         }
         // const res = await fetch('http://46.243.227.95:8000/model/property');
         // const cModel = 'property';
@@ -69,9 +76,10 @@ const MainPage =() => {
             />
            <p className="ms-5">Предсказание на основе характеристик дома</p>
            </div>
+           <Search/>
            </div>
             {
-                showObjects && (<Objects initialData={''}/>)
+                showObjects && (<ObjectsList />)
             }
             {
                 showProperty && (<Property initialData={''}/>)
