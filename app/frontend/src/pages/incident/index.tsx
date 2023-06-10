@@ -23,15 +23,15 @@ const Incidents = ({ initialData}) => {
     }
 
     return (
-        <div className='bg-white flex flex-col justify-center w-[2/3] ml-[30%] py-10'>
+        <div className='bg-white flex flex-col justify-center items-center w-[2/3] ml-[30%] py-10'>
             {data?.length === 0 ? (
                 <div>Загружается</div>
             ) : (data?.map(address => (
-                    <div className='w-[80%] my-5' key={address.id}>
+                    <div className='w-[80%] my-2' key={address.id}>
                         <div className="w-[80%] h-[1px] bg-slate-300"></div>
                         <Link href={'/incident/'+ address.id}>
-                            <p className='text-left text-black mb-1'>{address.name} </p> <p className='text-left text-black mb-1'>Предсказано работ: {address.num_works}</p>
-                            <span className='text-left text-black'>Один из возможных: {address.works_list[1]}</span>
+                            <p className='text-left text-black mb-1'>{address.name} </p> 
+                            <p className='text-left text-black'>Предсказано работ: {address.num_works}</p>
                         </Link>
                     </div>
                 ))

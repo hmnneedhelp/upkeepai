@@ -13,8 +13,7 @@ const MainPage =() => {
         if (showObjects == true){
             setShowObjects(false)
         }else{
-            setShowIncidents(true)
-            setShowObjects(false)
+            setShowObjects(true)
         }
     }
     const handleClickIncidents = async () =>{
@@ -22,7 +21,6 @@ const MainPage =() => {
             setShowIncidents(false)
         }else{
             setShowIncidents(true)
-            setShowObjects(false)
         }
         const res = await fetch('http://46.243.227.95:8000/model/incident');
         const cModel = 'incident';
@@ -33,7 +31,6 @@ const MainPage =() => {
             setShowProperty(false)
         }else{
             setShowProperty(true)
-            setShowObjects(false)
         }
         const res = await fetch('http://46.243.227.95:8000/model/property');
         const cModel = 'property';
@@ -42,7 +39,7 @@ const MainPage =() => {
     return(
         <main>
         <div className="w-[25%] h-screen flex flex-col justify-start items-center shadow-inner fixed top-0 left-0">
-           <div onClick={handleClickProperty} className="w-full mt-10 p-1 text-center hover:bg-green-300 transition duration-300 text-black cursor-pointer flex items-center"> 
+           <div onClick={handleClickObjects} className="w-full mt-10 p-1 text-center hover:bg-green-300 transition duration-300 text-black cursor-pointer flex items-center"> 
            <Image
             className="ms-5"
             src={'/database.png'}
@@ -60,7 +57,7 @@ const MainPage =() => {
             height={24}
             alt="Житель"
             />
-           <p className="ms-5">Предсказание на основе жалоб жителей</p>
+           <p className="ms-5">Капитальный ремонт</p>
            </div>
            <div onClick={handleClickProperty} className="w-full p-1 text-center hover:bg-green-300 transition duration-300 text-black cursor-pointer flex items-center"> 
            <Image
