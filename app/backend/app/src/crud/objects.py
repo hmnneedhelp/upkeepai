@@ -2,7 +2,8 @@ import asyncio
 
 from fastapi import HTTPException
 from sqlalchemy import select, outerjoin, insert, func
-from src.schema.objects import MKDShort, MKD, MKDDetail, MKDList
+from src.schema.objects import MKDShort, MKD, MKDDetail, MKDListIncident, MKDListFeature
+from src.schema.objects import UnionPredict as UnionPredictSchema
 from src.schema.objects import Overhaul as OverhaulSchema
 from src.schema.objects import OverhaulCreate as OverhaulCreateSchema
 from src.schema.objects import IncidentCreate as IncidentCreateSchema
@@ -20,29 +21,66 @@ from pydantic import parse_obj_as
 
 async def get_list(
     model: PredictionModels, limit: int, offset: int, session: AsyncSession
-) -> list[MKDList]:
+) -> list[MKDListIncident] | list[MKDListFeature] | list[UnionPredictSchema]:
     if model.value == "incident":
         table = IncidentPredict
-    else:
+        stmt = (
+            select(Mkd.id,
+                   Mkd.name,
+                   table.unom,
+                   Mkd.year_built,
+                   Mkd.num_apartments,
+                   func.count(Incident.id).label("incidents"),
+                   table.num_works.label("overhauls"))
+            .join(Mkd, Mkd.unom == table.unom)
+            .join(Incident, Mkd.unom == Incident.unom)
+            .group_by(Mkd.id, Mkd.name, table.unom, Mkd.year_built, Mkd.num_apartments, table.num_works)
+            .limit(limit)
+            .offset(offset)
+            .order_by(table.num_works.desc())
+        )
+        result = await session.execute(stmt)
+        result = result.all()
+        return [MKDListIncident.from_orm(res) for res in result][1:]
+    elif model.value == "feature":
         table = FeaturePredict
-    stmt = (
-        select(Mkd.id,
-               Mkd.name,
-               table.unom,
-               Mkd.year_built,
-               Mkd.year_reconstructed,
-               func.count(Incident.id).label("incidents"),
-               table.num_works.label("overhauls"))
-        .join(Mkd, Mkd.unom == table.unom)
-        .join(Incident, Mkd.unom == Incident.unom)
-        .group_by(Mkd.id, Mkd.name, table.unom, Mkd.year_built, Mkd.year_reconstructed, table.num_works)
-        .limit(limit)
-        .offset(offset)
-        .order_by(table.num_works.desc())
-    )
-    result = await session.execute(stmt)
-    result = result.all()
-    return [MKDList.from_orm(res) for res in result]
+        stmt = (
+            select(Mkd.id,
+                   Mkd.name,
+                   Mkd.year_built,
+                   Mkd.num_apartments,
+                   Mkd.num_floors,
+                   Mkd.num_entrances,
+                   Mkd.num_apartments,
+                   Mkd.num_passenger_elevators,
+                   SeriesOfProjects.name.label("series_of_project"),
+                   WallMaterial.name.label("wall_material"),
+                   RoofingMaterial.name.label("roofing_material"),
+                   HousingStock.name.label("housing_stock"),
+                   MkdStatus.name.label("mkd_status"),
+                   table.num_works.label("overhauls"))
+            # .join(FeaturePredict, Mkd.unom == FeaturePredict.unom)
+            .outerjoin(SeriesOfProjects)
+            .outerjoin(WallMaterial)
+            .outerjoin(HousingStock)
+            .outerjoin(MkdStatus)
+            .limit(limit)
+            .offset(offset)
+            .order_by(table.num_works.desc())
+        )
+        result = await session.execute(stmt)
+        result = result.all()
+        return [MKDListFeature.from_orm(res) for res in result]
+    elif model.value == "union":
+        stmt = (
+            select(UnionPredict.works_list,
+                   UnionPredict.num_works,
+                   UnionPredict.unom,
+                   Mkd.name.label("name")
+        ).join(Mkd, Mkd.unom == UnionPredict.unom)).order_by(UnionPredict.num_works.desc())
+        result = await session.execute(stmt)
+        result = result.all()
+        return [UnionPredictSchema.from_orm(res) for res in result]
 
 
 async def get(
@@ -197,7 +235,7 @@ async def get_objects_by_pattern(pattern: str, session: AsyncSession):
     stmt = select(
         Mkd.id,
         Mkd.name,
-    ).where(Mkd.name.ilike(f"%{name}%"))
+    ).where(Mkd.name.ilike(f"%{name}%")).limit(15)
     objects = await session.execute(stmt)
     objects = objects.all()
     return [MKDShort.from_orm(obj) for obj in objects]

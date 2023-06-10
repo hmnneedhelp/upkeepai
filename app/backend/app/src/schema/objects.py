@@ -116,14 +116,44 @@ class MKDDetail(BaseModel):
     predict: PredictShort | None
 
 
-class MKDList(BaseModel):
+class MKDListIncident(BaseModel):
     id: int
     name: str
     unom: int
-    year_built: int
-    year_reconstructed: int | None
+    year_built: int | None
+    num_apartments: int | None
     incidents: int
     overhauls: int
 
     class Config:
         orm_mode = True
+
+
+class MKDListFeature(BaseModel):
+    id: int
+    name: str
+    year_built: int
+    num_apartments: int
+    num_floors: int
+    num_entrances: int
+    num_apartments: int
+    num_passenger_elevators: int
+    series_of_project: str
+    wall_material: str
+    roofing_material: str
+    housing_stock: str
+    mkd_status: str
+    overhauls: str
+
+    class Config:
+        orm_mode = True
+
+
+class UnionPredict(BaseModel):
+    name: str
+    unom: int
+    works_list: list[str]
+    num_works: int
+
+    class Config:
+            orm_mode = True

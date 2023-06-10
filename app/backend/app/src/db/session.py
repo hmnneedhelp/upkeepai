@@ -204,3 +204,9 @@ class FeaturePredict(Base):
     unom = Column(Integer, primary_key=True)
     works_list = Column(String)
     num_works = Column(Integer)
+
+class UnionPredict(Base):
+    __tablename__ = "union_predict"
+    unom = Column(Integer, primary_key=True)
+    works_list = Column(String)
+    num_works = Column(Integer)

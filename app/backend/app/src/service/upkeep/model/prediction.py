@@ -38,7 +38,10 @@ def predict_by_house_and_inc(df_1: pd.DataFrame, df_2: pd.DataFrame):
 
     # Почистим табл с инцидентами
     df_incident = df_2[df_2["source"] != "ASUPR"]  # только жалобы, без датчиков
-    df_incident = df_incident[["name", "source", "unom"]]  # нужные столбцы
+    df_incident['data'] = pd.to_datetime(df_incident['opened'], dayfirst=False,
+                                         errors='coerce').dt.date
+    df_incident = df_incident[["name", "source", "unom", "data"]]  # нужные столбцы
+    df_incident = df_incident.drop_duplicates()
     df_incident = df_incident.dropna()
     # оставим только подходящие нам источники данных для кап ремонта
     df_incident = df_incident.loc[df_incident["source"].isin(["EDC", "NG", "MGI"])]
@@ -63,7 +66,7 @@ def predict_by_house_and_inc(df_1: pd.DataFrame, df_2: pd.DataFrame):
         "ремонт фасада (замена оконных блоков, расположенных в помещениях общего пользования в многоквартирном доме)": "окн",
     }
 
-    df_works = prepare_df_1(df_1)[["unom"]]
+    df_works = prepare_df_1(df_1)[["unom", "Количество подъездов"]]
     for k, v in work_inc_dict.items():
         mask = df_incident["name"].str.contains(v)
         df_works = df_works.merge(
@@ -72,14 +75,15 @@ def predict_by_house_and_inc(df_1: pd.DataFrame, df_2: pd.DataFrame):
             on="unom",
         )
     df_works = df_works.fillna(0).astype(int)
-
-    # будем учитывать только те работы, что имеют > 10 обращений
+    df_works['Количество подъездов'] = df_works['Количество подъездов'].replace(0, 1)
+    # будем учитывать только те работы, что имеют > 5 обращений
     df__ = df_works.copy()
-    for col in df__.columns[1:]:
-        df__[col].where(df__[col] > 10, 0, inplace=True)
-        df__[col].where(df__[col] < 10, 1, inplace=True)
+    for col in df__.columns[2:]:
+        df__[col].where((df__[col] / df__['Количество подъездов']) > 5, 0, inplace=True)
+        df__[col].where((df__[col] / df__['Количество подъездов']) < 5, 1, inplace=True)
 
     df__ = df__.set_index(["unom"])
+    df__ = df__.drop(columns='Количество подъездов')
     # подсчитаем число работ для каждого дома
     df__["num_works"] = df__.sum(axis=1)
 
