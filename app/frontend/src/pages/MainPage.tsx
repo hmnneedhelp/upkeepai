@@ -22,8 +22,8 @@ const MainPage =() => {
         }else{
             setShowIncidents(true)
         }
-        const res = await fetch('http://46.243.227.95:8000/model/incident');
-        const cModel = 'incident';
+        // const res = await fetch('http://46.243.227.95:8000/model/incident');
+        // const cModel = 'incident';
     };
     
     const handleClickProperty = async () =>{
@@ -32,8 +32,8 @@ const MainPage =() => {
         }else{
             setShowProperty(true)
         }
-        const res = await fetch('http://46.243.227.95:8000/model/property');
-        const cModel = 'property';
+        // const res = await fetch('http://46.243.227.95:8000/model/property');
+        // const cModel = 'property';
     };
     
     return(

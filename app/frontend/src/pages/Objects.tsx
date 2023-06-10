@@ -34,7 +34,7 @@ const Objects = ({ initialData}) => {
               <th className='border-2 border-black'>Наименование объекта</th>
               <th className='border-2 border-black'>Год постройки</th>
               <th className='border-2 border-black'>Год реконструкции</th>
-              <th className='border-2 border-black'>Жаолб жителей</th>
+              <th className='border-2 border-black'>Жалоб жителей</th>
               <th className='border-2 border-black'>Количество капремонтов</th>
             </tr>
           </thead>
