@@ -18,6 +18,7 @@ const ContactInfo = ({ contact }) => {
       );
     }
     const fieldNames = {
+      "mkd.year_built": "Год постройки",
       "mkd.series_of_project": "Серия проекта", //
       "mkd.num_floors": "Количество этажей", //
       "mkd.num_entrances": 'Количество входов', //
@@ -25,7 +26,7 @@ const ContactInfo = ({ contact }) => {
       "mkd.num_passenger_elevators":"Количество лифтов",
       "mkd.total_area":"Общая площадь", // пассажирские добавить
       "mkd.wall_material":"Материал стен", //
-      "mkd.roof_material":"Материал крыши", //
+      "mkd.roofing_material":"Материал крыши", //
       "mkd.housing_stock":"Тип здания", //
       "mkd.mkd_status":"Статус МКД", //
     };

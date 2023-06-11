@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter, Depends, HTTPException
 from src.api import deps
-from src.schema.objects import MKDDetail, MKDShort, Predict, OverhaulCreate, MKDList
+from src.schema.objects import MKDDetail, MKDShort, Predict, OverhaulCreate, MKDListFeature, MKDListIncident, UnionPredict
 from src.schema.models import PredictionModels
 from src.crud.objects import get as get_objects
 from src.crud.objects import get_object_by_id, get_objects_by_pattern, insert_overhaul, get_list
@@ -27,7 +27,7 @@ async def object_list(
     return await get_objects(model=model, limit=limit, offset=offset, session=session)
 
 
-@router.get("/list", response_model=list[MKDList])
+@router.get("/list", response_model=list[MKDListFeature] | list [MKDListIncident] | list[UnionPredict])
 async def object_list(
     model: PredictionModels = 'incident',
     limit: int = 10,

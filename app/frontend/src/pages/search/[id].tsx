@@ -4,7 +4,7 @@ import Script from 'next/script';
 import Link from "next/link";
 export const getServerSideProps = async (context) => {
     const { id } = context.params;
-    const response = await fetch(`http://46.243.227.95:8000/objects/`+ id + '?model=feature');
+    const response = await fetch(`http://46.243.227.95:8000/objects/`+ id + '?model=union');
     const data = await response.json();
     console.log(data)
     if (!data) {
