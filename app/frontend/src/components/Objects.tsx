@@ -22,13 +22,18 @@ const Objects = ({ initialData}) => {
   const handleClickMinus = () => {
     setOffset(offset - 15);
   };
-
+  const handleClickAi = async () => {
+    const res = await fetch('http://46.243.227.95:8000/model/incident');
+  }
   return (
     <div className='bg-white flex flex-col justify-center items-center pt-10 addresses ml-64'>
+      <div className='text-center p-1 hover:bg-green-300  transition duration-300 text-black cursor-pointer flex items-center' onClick={handleClickAi}>
+        <p> Переобучить модель</p>
+      </div>
       {data?.length === 0 ? (
-        <div>Загружается</div>
+        <div className='mt-5'>Загружается</div>
       ) : (
-        <table className='table-fixed border-black border-2'>
+        <table className='table-fixed border-black border-2 mt-5'>
           <thead className='border-2 border-black'>
             <tr className='border-2 border-black'>
               <th className='border-2 border-black'>Наименование объекта</th>

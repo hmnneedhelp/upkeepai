@@ -57,12 +57,14 @@ const ContactInfo = ({ contact }) => {
         <hr className='h-[1px] w-80 bg-slate-200'/>
           {Object.keys(fieldNames).map(key => getMarkup(getValueByPath(contact, key.split('.')), fieldNames[key]))}
         </div>
-        <div className="mt-5 pb-10">
+        <div className="mt-5 text-left">
           <p>Общее количество жалоб: {contact?.incidents?.length}</p>
         </div>
         <div className="text-left mx-auto">
-          <p>Общее количество предсказанных работ: {contact?.predict?.num_works}</p>
-          <p className="w-80 my-5">Список предсказанных работ: </p>{contact?.predict?.works_list?.map(works_list =>(
+          <p className="w-80 pb-5">Общее количество предсказанных работ: {contact?.predict?.num_works}</p>
+          
+        <hr className='h-[1px] w-80 bg-slate-500'/>
+          <p className="w-80 text-bold font-bold">Список предсказанных работ: </p>{contact?.predict?.works_list?.map(works_list =>(
             <ul key={works_list} className="list-disc">
               <li>{works_list + ' 1 усл. ед'}</li>
             </ul>

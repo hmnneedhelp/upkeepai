@@ -23,13 +23,19 @@ const FeatureObjects = ({ initialData}) => {
   const handleClickMinus = () => {
     setOffset(offset - 15);
   };
-  console.log(name)
+  
+  const handleClickAi = async () => {
+    const res = await fetch('http://46.243.227.95:8000/model/incident');
+  }
   return (
     <div className='bg-white flex flex-col justify-center items-center pt-10 addresses ml-64'>
+      <div className='text-center p-1 hover:bg-green-300  transition duration-300 text-black cursor-pointer flex items-center' onClick={handleClickAi}>
+        <p> Переобучить модель</p>
+      </div>
       {data?.length === 0 ? (
         <div>Загружается</div>
       ) : (
-        <table className='table-auto border-black border-2 ml-36 w-auto'>
+        <table className='table-auto border-black border-2 ml-36 w-auto mt-5'>
           <thead className='border-2 border-black'>
             <tr className='border-2 border-black'>
               <th className='border-2 border-black'>Адрес</th>
@@ -46,10 +52,22 @@ const FeatureObjects = ({ initialData}) => {
               <tr key={index} className='border-2 border-black'>
                 <td className='border-2 border-black'>{address.name}</td>
                 <td className='border-2 border-black text-center'>{address.year_built}</td>
-                <td className='border-2 border-black text-center'>{address.num_apartments}</td>
+                <td className='border-2 border-black text-center'>{address.num_apartments === null ?(
+                    <div>Данных не найдено</div>
+                ):(
+                    (address.num_apartments)
+                )}</td>
                 <td className='border-2 border-black text-center'>{address.num_floors}</td>
-                <td className='border-2 border-black text-center'>{address.num_entrances}</td>
-                <td className='border-2 border-black text-center'>{address.num_passenger_elevators}</td>
+                <td className='border-2 border-black text-center'>{address.num_entrances === 0 ? (
+                    <div>Данных не найдено</div>
+                ):(
+                    (address.num_entrances)
+                )}</td>
+                <td className='border-2 border-black text-center'>{address.num_passenger_elevators === 0 ? (
+                    <div>Данных не найдено</div>
+                ):(
+                    (address.num_passenger_elevators)
+                )}</td>
                 <td className='border-2 border-black text-center'>{address.overhauls}</td>
               </tr>
             ))}
