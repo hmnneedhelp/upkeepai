@@ -8,7 +8,7 @@ import FeatureObjects from "../components/FeatureObjects";
 import { Main } from "next/document";
 const MainPage =() => {
     const [showIncidents, setShowIncidents] = useState(false)
-    const [showObjects, setShowObjects] = useState(true)
+    const [showObjects, setShowObjects] = useState(false)
     const handleClickObjects =async () => {
         if (showObjects == true){
             setShowObjects(false)
