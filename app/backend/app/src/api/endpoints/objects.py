@@ -27,7 +27,7 @@ async def object_list(
     return await get_objects(model=model, limit=limit, offset=offset, session=session)
 
 
-@router.get("/list", response_model=list[MKDListFeature] | list [MKDListIncident] | list[UnionPredict])
+@router.get("/list", response_model=list[MKDListIncident] | list[MKDListFeature] | list[UnionPredict])
 async def object_list(
     model: PredictionModels = 'incident',
     limit: int = 10,

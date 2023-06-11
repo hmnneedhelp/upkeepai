@@ -132,18 +132,12 @@ class MKDListIncident(BaseModel):
 class MKDListFeature(BaseModel):
     id: int
     name: str
-    year_built: int
-    num_apartments: int
-    num_floors: int
-    num_entrances: int
-    num_apartments: int
-    num_passenger_elevators: int
-    series_of_project: str
-    wall_material: str
-    roofing_material: str
-    housing_stock: str
-    mkd_status: str
-    overhauls: str
+    year_built: int | None
+    num_apartments: int | None
+    num_floors: int | None
+    num_entrances: int | None
+    num_passenger_elevators: int | None
+    overhauls: int | None
 
     class Config:
         orm_mode = True

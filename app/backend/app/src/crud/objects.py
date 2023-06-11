@@ -18,7 +18,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import DatabaseError
 from pydantic import parse_obj_as
 
-
 async def get_list(
     model: PredictionModels, limit: int, offset: int, session: AsyncSession
 ) -> list[MKDListIncident] | list[MKDListFeature] | list[UnionPredictSchema]:
@@ -41,6 +40,7 @@ async def get_list(
         )
         result = await session.execute(stmt)
         result = result.all()
+        print(result)
         return [MKDListIncident.from_orm(res) for res in result][1:]
     elif model.value == "feature":
         table = FeaturePredict
@@ -53,17 +53,33 @@ async def get_list(
                    Mkd.num_entrances,
                    Mkd.num_apartments,
                    Mkd.num_passenger_elevators,
-                   SeriesOfProjects.name.label("series_of_project"),
-                   WallMaterial.name.label("wall_material"),
-                   RoofingMaterial.name.label("roofing_material"),
-                   HousingStock.name.label("housing_stock"),
-                   MkdStatus.name.label("mkd_status"),
-                   table.num_works.label("overhauls"))
-            # .join(FeaturePredict, Mkd.unom == FeaturePredict.unom)
-            .outerjoin(SeriesOfProjects)
-            .outerjoin(WallMaterial)
-            .outerjoin(HousingStock)
-            .outerjoin(MkdStatus)
+                   # select(Mkd.id.label("series_of_project")).where(Mkd.id == Mkd.id).subquery(),
+                   # Mkd.series_of_project,
+                   # Mkd.wall_material,
+                   # Mkd.housing_stock,
+                   # SeriesOfProjects.name.label("series_of_project"),
+                   # WallMaterial.name.label("wall_material"),
+                   # RoofingMaterial.name.label("roofing_material"),
+                   # HousingStock.name.label("housing_stock"),
+                   # MkdStatus.name.label("mkd_status"),
+                   # select(FeaturePredict.num_works.label("overhauls")).where(Mkd.unom == FeaturePredict.unom).subquery(),
+                   table.num_works.label("overhauls"),
+                   # Mkd.id.label("overhauls")
+                   )
+            .group_by(Mkd.id,
+                   Mkd.name,
+                   Mkd.year_built,
+                   Mkd.num_apartments,
+                   Mkd.num_floors,
+                   Mkd.num_entrances,
+                   Mkd.num_apartments,
+                   Mkd.num_passenger_elevators,
+                   table.num_works)
+            .join(FeaturePredict, Mkd.unom == FeaturePredict.unom)
+            # .join(SeriesOfProjects)
+            # .join(WallMaterial)
+            # .join(HousingStock)
+            # .join(MkdStatus)
             .limit(limit)
             .offset(offset)
             .order_by(table.num_works.desc())
@@ -77,7 +93,8 @@ async def get_list(
                    UnionPredict.num_works,
                    UnionPredict.unom,
                    Mkd.name.label("name")
-        ).join(Mkd, Mkd.unom == UnionPredict.unom)).order_by(UnionPredict.num_works.desc())
+        ).join(Mkd, Mkd.unom == UnionPredict.unom)).limit(limit).offset(offset)\
+            .order_by(UnionPredict.num_works.desc())
         result = await session.execute(stmt)
         result = result.all()
         return [UnionPredictSchema.from_orm(res) for res in result]
