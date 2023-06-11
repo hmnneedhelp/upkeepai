@@ -214,8 +214,10 @@ async def get_predicted_works(
 ):
     if model.value == "incident":
         table = IncidentPredict
-    else:
+    elif model.value == "feature":
         table = FeaturePredict
+    elif model.value == "union":
+        table = UnionPredict
     stmt = select(table.num_works, table.works_list).where(table.unom == unom)
     result = await session.execute(stmt)
     result = result.fetchone()
